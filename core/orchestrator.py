@@ -4,6 +4,7 @@ from core.schemas import (
     AnalysisResult,
     ReviewIssue,
     ReviewResult,
+    SeverityCounts,
     FixResult,
     ValidationResult,
     PipelineIteration
@@ -97,7 +98,7 @@ class CodeGuardOrchestrator:
         for iss in consolidated_issues:
             severity_counts[iss.severity] = severity_counts.get(iss.severity, 0) + 1
 
-        code_review.severity_counts = severity_counts
+        code_review.severity_counts = SeverityCounts(**severity_counts)
 
         # If no issues were found, code is already clean!
         if not consolidated_issues:

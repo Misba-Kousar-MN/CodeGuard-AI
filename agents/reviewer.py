@@ -1,7 +1,7 @@
 import os
 from typing import List
 from core.llm import GeminiLLMProvider
-from core.schemas import ReviewIssue, ReviewResult, AnalysisResult
+from core.schemas import ReviewIssue, ReviewResult, AnalysisResult, SeverityCounts
 
 class CodeReviewerAgent:
     """Agent 2: Performs detailed code review detecting logical bugs, edge cases, quality and performance issues."""
@@ -23,7 +23,7 @@ class CodeReviewerAgent:
             return ReviewResult(
                 summary="Deterministic AST Static Code Review (LLM Key Unavailable).",
                 issues=static_issues,
-                severity_counts=counts,
+                severity_counts=SeverityCounts(**counts),
                 overall_assessment="Static Analysis Complete."
             )
 
@@ -61,6 +61,6 @@ class CodeReviewerAgent:
         counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
         for iss in result.issues:
             counts[iss.severity] = counts.get(iss.severity, 0) + 1
-        result.severity_counts = counts
+        result.severity_counts = SeverityCounts(**counts)
 
         return result

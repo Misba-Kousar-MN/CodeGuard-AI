@@ -30,12 +30,19 @@ class ReviewIssue(BaseModel):
     )
 
 
+class SeverityCounts(BaseModel):
+    CRITICAL: int = 0
+    HIGH: int = 0
+    MEDIUM: int = 0
+    LOW: int = 0
+
+
 class ReviewResult(BaseModel):
     """Combined review report containing all findings."""
     summary: str = Field(description="Overall summary of the review findings")
     issues: List[ReviewIssue] = Field(default_factory=list, description="List of detected issues")
-    severity_counts: Dict[str, int] = Field(
-        default_factory=lambda: {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0},
+    severity_counts: SeverityCounts = Field(
+        default_factory=SeverityCounts,
         description="Counts of issues by severity"
     )
     overall_assessment: str = Field(description="Pass/Fail or health assessment score/summary")

@@ -179,7 +179,7 @@ with st.sidebar:
     # Model & Pipeline Controls
     selected_model = st.selectbox(
         "Gemini Model",
-        options=["gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"],
+        options=["gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-2.5-flash"],
         index=0
     )
     llm_provider.model = selected_model
@@ -280,6 +280,9 @@ if res:
         # Header Metrics Bar
         review_obj = res["review"]
         counts = review_obj.severity_counts
+        def get_count(k):
+            return getattr(counts, k, 0) if hasattr(counts, k) else (counts.get(k, 0) if isinstance(counts, dict) else 0)
+
         total_issues = len(res["consolidated_issues"])
         final_val = res["final_validation"]
         
@@ -289,13 +292,13 @@ if res:
         with m_col1:
             st.markdown(f"<div class='metric-card'><div class='metric-title'>Total Issues</div><div class='metric-val' style='color:#3B82F6;'>{total_issues}</div></div>", unsafe_allow_html=True)
         with m_col2:
-            st.markdown(f"<div class='metric-card'><div class='metric-title'>Critical</div><div class='metric-val' style='color:#EF4444;'>{counts.get('CRITICAL', 0)}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><div class='metric-title'>Critical</div><div class='metric-val' style='color:#EF4444;'>{get_count('CRITICAL')}</div></div>", unsafe_allow_html=True)
         with m_col3:
-            st.markdown(f"<div class='metric-card'><div class='metric-title'>High</div><div class='metric-val' style='color:#F97316;'>{counts.get('HIGH', 0)}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><div class='metric-title'>High</div><div class='metric-val' style='color:#F97316;'>{get_count('HIGH')}</div></div>", unsafe_allow_html=True)
         with m_col4:
-            st.markdown(f"<div class='metric-card'><div class='metric-title'>Medium</div><div class='metric-val' style='color:#F59E0B;'>{counts.get('MEDIUM', 0)}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><div class='metric-title'>Medium</div><div class='metric-val' style='color:#F59E0B;'>{get_count('MEDIUM')}</div></div>", unsafe_allow_html=True)
         with m_col5:
-            st.markdown(f"<div class='metric-card'><div class='metric-title'>Low</div><div class='metric-val' style='color:#10B981;'>{counts.get('LOW', 0)}</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><div class='metric-title'>Low</div><div class='metric-val' style='color:#10B981;'>{get_count('LOW')}</div></div>", unsafe_allow_html=True)
         with m_col6:
             st.markdown(f"<div class='metric-card'><div class='metric-title'>Iterations</div><div class='metric-val' style='color:#A855F7;'>{res['total_iterations']}</div></div>", unsafe_allow_html=True)
 
