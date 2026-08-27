@@ -164,6 +164,8 @@ class CodeGuardOrchestrator:
         # Enforce max 3 iterations strict boundary
         loop_limit = min(max(1, max_iterations), 3)
 
+        import ast
+
         for iteration_idx in range(1, loop_limit + 1):
             # Agent 4: Generate Fix
             fix_res: FixResult = self.fixer_agent.generate_fix(
@@ -171,6 +173,13 @@ class CodeGuardOrchestrator:
                 issues=current_issues,
                 language=language
             )
+
+            # Basic syntax check for Python fixed code
+            if language.lower() == "python" and fix_res.fixed_code:
+                try:
+                    ast.parse(fix_res.fixed_code)
+                except SyntaxError as syn_err:
+                    print(f"[Orchestrator] Warning: Fixer output contained Python syntax error: {syn_err}")
 
             # Agent 5: Validate Fixed Code
             val_res: ValidationResult = self.validator_agent.validate(

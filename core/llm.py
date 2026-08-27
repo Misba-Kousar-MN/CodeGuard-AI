@@ -67,9 +67,21 @@ class GeminiLLMProvider:
         """Check if Gemini API key and client are configured."""
         return self._client is not None and bool(self.api_key.strip())
 
+    def _clean_json_string(self, text: str) -> str:
+        """Strips markdown code fences and cleans response text for JSON parsing."""
+        if not text:
+            return ""
+        cleaned = text.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+        elif cleaned.startswith("```"):
+            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+        return cleaned
+
     def generate_structured(self, prompt: str, schema_class: Type[T], system_instruction: Optional[str] = None) -> Optional[T]:
         """
         Generate a structured Pydantic model output using Gemini's JSON schema capability.
+        Handles response normalization, markdown fences, and truncation errors.
         """
         if not self.is_available():
             print("[GeminiLLMProvider] Gemini API is unavailable.")
@@ -82,6 +94,7 @@ class GeminiLLMProvider:
                 response_mime_type="application/json",
                 response_schema=schema_class,
                 temperature=0.2,
+                max_output_tokens=8192,
             )
             if system_instruction:
                 config.system_instruction = system_instruction
@@ -95,23 +108,26 @@ class GeminiLLMProvider:
             if not response or not response.text:
                 raise ValueError("Empty response received from Gemini API.")
 
-            # Parse response text into Pydantic model
-            return schema_class.model_validate_json(response.text)
+            cleaned_text = self._clean_json_string(response.text)
+
+            # Direct Pydantic model validation
+            try:
+                return schema_class.model_validate_json(cleaned_text)
+            except Exception:
+                # Fallback to json dict parsing + model_validate
+                data = json.loads(cleaned_text)
+                return schema_class.model_validate(data)
 
         except Exception as e:
-            print(f"[GeminiLLMProvider] Error generating structured response: {e}")
-            # Fallback attempt: try raw parsing if response text exists
+            print(f"[GeminiLLMProvider] Stage [{schema_class.__name__}] error: {e}")
+            # Attempt recovery if response object was instantiated
             try:
                 if 'response' in locals() and response and response.text:
-                    clean_text = response.text.strip()
-                    if clean_text.startswith("```json"):
-                        clean_text = clean_text.split("```json")[1].split("```")[0].strip()
-                    elif clean_text.startswith("```"):
-                        clean_text = clean_text.split("```")[1].split("```")[0].strip()
-                    data = json.loads(clean_text)
+                    cleaned_text = self._clean_json_string(response.text)
+                    data = json.loads(cleaned_text)
                     return schema_class.model_validate(data)
             except Exception as parse_err:
-                print(f"[GeminiLLMProvider] Fallback parsing failed: {parse_err}")
+                print(f"[GeminiLLMProvider] Fallback parsing failed for {schema_class.__name__}: {parse_err}")
             return None
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None) -> str:

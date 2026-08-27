@@ -47,7 +47,7 @@ class CodeReviewerAgent:
             return ReviewResult(
                 summary="AST Static Review completed. LLM review unavailable.",
                 issues=static_issues,
-                severity_counts=counts,
+                severity_counts=SeverityCounts(**counts),
                 overall_assessment="Partial Review Completed."
             )
 
