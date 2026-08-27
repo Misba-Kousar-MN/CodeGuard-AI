@@ -11,21 +11,21 @@ from core.orchestrator import CodeGuardOrchestrator
 from utils.file_handler import validate_uploaded_file, read_uploaded_file
 from utils.formatting import generate_unified_diff, get_severity_badge_html, get_category_badge_html, redact_secrets
 
-# Page Configuration
+# Page Configuration - Full Width Desktop Layout
 st.set_page_config(
     page_title="CodeGuard AI — Analyze. Explain. Fix. Validate.",
-    page_icon="🛡️",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Dreamy Sky-Blue Desktop Two-Column UX CSS
+# Professional Full-Screen Desktop Workspace CSS
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
     html, body, .stApp {
-        background: linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 35%, #F8FAFC 100%) !important;
+        background: linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 30%, #F8FAFC 100%) !important;
         color: #0F172A !important;
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     }
@@ -35,37 +35,40 @@ CUSTOM_CSS = """
     header {visibility: hidden;}
     .stDeployButton {display: none;}
 
-    /* Full Width Container for Desktop Two-Column Layout */
+    /* Full-Screen Workspace Container */
     .block-container {
-        max-width: 1380px !important;
-        padding-top: 0.8rem !important;
-        padding-bottom: 1.5rem !important;
+        max-width: 1520px !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
         margin: 0 auto !important;
     }
 
-    /* Clean Horizontal Header Bar */
+    /* Compact 56px Header Bar */
     .app-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 20px;
+        height: 56px;
+        padding: 0 18px;
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(12px);
         border: 1px solid #BAE6FD;
-        border-radius: 14px;
-        margin-bottom: 14px;
+        border-radius: 12px;
+        margin-bottom: 10px;
         box-shadow: 0 4px 15px -2px rgba(56, 189, 248, 0.08);
     }
     .brand-title {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
         font-weight: 800;
         color: #0284C7;
         letter-spacing: -0.02em;
     }
     .brand-tagline {
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         color: #64748B;
-        margin-left: 10px;
+        margin-left: 8px;
         font-weight: 500;
     }
     .status-badge-active {
@@ -74,7 +77,7 @@ CUSTOM_CSS = """
         border: 1px solid #86EFAC;
         padding: 4px 12px;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
     }
     .status-badge-offline {
@@ -83,30 +86,30 @@ CUSTOM_CSS = """
         border: 1px solid #FDBA74;
         padding: 4px 12px;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
     }
 
-    /* Card Panels */
-    .workspace-card {
+    /* Workspace Panel Containers */
+    .workspace-panel {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
         border-radius: 14px;
-        padding: 18px;
+        padding: 16px;
         box-shadow: 0 4px 16px -4px rgba(56, 189, 248, 0.06);
-        height: 100%;
+        min-height: calc(100vh - 90px);
     }
 
-    /* Editor Box Styling */
+    /* Dark Navy IDE Code Editor */
     .stTextArea textarea {
         border-radius: 10px !important;
-        border: 1px solid #CBD5E1 !important;
-        background: #F8FAFC !important;
-        color: #0F172A !important;
+        border: 1px solid #1E293B !important;
+        background: #0F172A !important;
+        color: #F8FAFC !important;
         font-family: 'JetBrains Mono', monospace !important;
         font-size: 0.86rem !important;
-        height: 380px !important;
-        line-height: 1.45 !important;
+        height: 480px !important;
+        line-height: 1.5 !important;
     }
 
     pre, code {
@@ -136,25 +139,25 @@ CUSTOM_CSS = """
     .severity-bar {
         display: flex;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         flex-wrap: wrap;
     }
     .severity-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 8px 14px;
-        min-width: 85px;
+        border-radius: 8px;
+        padding: 6px 12px;
+        min-width: 80px;
         flex: 1;
         text-align: center;
         box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.03);
     }
     .severity-num {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 800;
     }
     .severity-lbl {
-        font-size: 0.68rem;
+        font-size: 0.66rem;
         color: #64748B;
         font-weight: 700;
         text-transform: uppercase;
@@ -163,25 +166,26 @@ CUSTOM_CSS = """
     .summary-callout {
         background: #F0F9FF;
         border: 1px solid #BAE6FD;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-size: 0.88rem;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.86rem;
         color: #0369A1;
         font-weight: 600;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
-    /* Empty State Container */
+    /* Empty State Box Centered in Right Panel */
     .empty-state-box {
         text-align: center;
-        padding: 40px 20px;
+        padding: 60px 20px;
         background: #F8FAFC;
-        border: 2px dashed #E2E8F0;
-        border-radius: 14px;
+        border: 2px dashed #CBD5E1;
+        border-radius: 12px;
         color: #64748B;
+        margin-top: 40px;
     }
     .empty-state-icon {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
         margin-bottom: 8px;
     }
 </style>
@@ -264,14 +268,14 @@ if "pipeline_result" not in st.session_state:
 # Server-Side Engine Initialization
 llm_provider = GeminiLLMProvider()
 
-# Clean Horizontal Header Bar
+# Compact 56px Header Bar
 col_h1, col_h2 = st.columns([3, 1])
 with col_h1:
     st.markdown(
         """
         <div class="app-header">
             <div>
-                <span class="brand-title">🛡️ CodeGuard AI</span>
+                <span class="brand-title">CodeGuard AI ✦</span>
                 <span class="brand-tagline">Analyze. Explain. Fix. Validate.</span>
             </div>
         </div>
@@ -288,7 +292,7 @@ with col_h2:
 # Engine Status Badge right under header
 st.markdown(
     f"""
-    <div style="text-align:right; margin-top:-24px; margin-bottom:12px;">
+    <div style="text-align:right; margin-top:-24px; margin-bottom:10px;">
         <span class="{'status-badge-active' if llm_provider.is_available() else 'status-badge-offline'}">
             {'● AI Ready (' + llm_provider.model + ')' if llm_provider.is_available() else '○ Static Analysis Mode'}
         </span>
@@ -298,24 +302,29 @@ st.markdown(
 )
 
 # ----------------------------------------------------
-# MAIN DESKTOP TWO-COLUMN WORKSPACE
+# MAIN FULL-SCREEN TWO-COLUMN WORKSPACE
 # ----------------------------------------------------
 col_left, col_right = st.columns([48, 52])
 
 # ====================================================
-# LEFT COLUMN: CODE WORKSPACE
+# LEFT COLUMN: CODE WORKSPACE (48%)
 # ====================================================
 with col_left:
     st.markdown("### Code Editor")
-    st.markdown("<p style='color:#64748B; font-size:0.85rem; margin-top:-8px;'>Paste your code here or upload a source file.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#64748B; font-size:0.84rem; margin-top:-10px;'>Paste your code here or upload a source file.</p>", unsafe_allow_html=True)
 
-    input_mode = st.radio("Mode", options=["Code Editor", "Upload File"], horizontal=True, label_visibility="collapsed")
+    col_m1, col_m2 = st.columns([3, 1])
+    with col_m1:
+        input_mode = st.radio("Mode", options=["Code Editor", "Upload File"], horizontal=True, label_visibility="collapsed")
+    with col_m2:
+        lang_sel = st.selectbox("Language", options=["Python"], index=0, label_visibility="collapsed")
+        language = "python"
 
     if input_mode == "Code Editor":
         edited_code = st.text_area(
             label="Source Code Input Box",
             value=st.session_state.code_input,
-            height=380,
+            height=480,
             placeholder="Paste your source code here...",
             label_visibility="collapsed"
         )
@@ -339,7 +348,7 @@ with col_left:
     line_cnt = len(active_code_str.splitlines()) if active_code_str else 0
     char_cnt = len(active_code_str) if active_code_str else 0
 
-    # Metadata row below editor
+    # Metadata Counter Row below IDE Editor
     st.markdown(
         f"""
         <div class="editor-meta-row">
@@ -351,30 +360,23 @@ with col_left:
     )
 
     # Action Controls under Editor
-    col_a1, col_a2, col_a3 = st.columns([2, 1, 2])
+    col_a1, col_a2 = st.columns([1, 2])
     with col_a1:
-        lang_sel = st.selectbox("Language", options=["Python"], index=0, label_visibility="collapsed")
-        language = "python"
-    with col_a2:
         if st.button("Clear", use_container_width=True):
             st.session_state.code_input = ""
             st.session_state.pipeline_result = None
             st.rerun()
-    with col_a3:
+    with col_a2:
         run_btn = st.button("Review My Code ✨", type="primary", use_container_width=True)
 
     # Sample Dropdown Selector
     sample_choice = st.selectbox(
-        "Try a Sample ▾",
-        options=["Select a sample...", "Security Issues", "Logic Bugs", "Clean Code"],
+        "Try a sample ▾",
+        options=["Select a sample...", "Security Issues", "Logic Bugs", "Reliability Issues", "Code Quality", "Clean Code"],
         index=0
     )
-    if sample_choice == "Security Issues":
+    if sample_choice in ("Security Issues", "Logic Bugs", "Reliability Issues", "Code Quality"):
         st.session_state.code_input = BUGGY_SAMPLE
-        st.session_state.pipeline_result = None
-        st.rerun()
-    elif sample_choice == "Logic Bugs":
-        st.session_state.code_input = LOGIC_SAMPLE
         st.session_state.pipeline_result = None
         st.rerun()
     elif sample_choice == "Clean Code":
@@ -392,9 +394,9 @@ with col_left:
             with progress_box.container():
                 st.markdown(
                     """
-                    <div class="workspace-card" style="text-align:center; padding:20px; background:#F0F9FF; border:1px solid #BAE6FD;">
+                    <div style="text-align:center; padding:18px; background:#F0F9FF; border:1px solid #BAE6FD; border-radius:12px;">
                         <div style="font-weight:700; color:#0284C7; font-size:1.05rem;">CodeGuard is reviewing your code ✦</div>
-                        <div style="font-size:0.85rem; color:#0369A1; margin-top:8px;">
+                        <div style="font-size:0.85rem; color:#0369A1; margin-top:6px;">
                             ✓ Code analysis &nbsp;|&nbsp; ✓ Bug detection &nbsp;|&nbsp; ✓ Security audit &nbsp;|&nbsp; ◌ Generating fixes &nbsp;|&nbsp; ◌ Validating fixes
                         </div>
                     </div>
@@ -419,7 +421,7 @@ with col_left:
             st.rerun()
 
 # ====================================================
-# RIGHT COLUMN: REVIEW WORKSPACE
+# RIGHT COLUMN: REVIEW WORKSPACE (52%)
 # ====================================================
 with col_right:
     # State A: Before Review (Empty State)
@@ -428,8 +430,8 @@ with col_right:
             """
             <div class="empty-state-box">
                 <div class="empty-state-icon">✨</div>
-                <div style="font-weight:700; font-size:1.1rem; color:#0F172A; margin-bottom:4px;">Your Code Review Workspace</div>
-                <div style="font-size:0.86rem; color:#64748B;">
+                <div style="font-weight:700; font-size:1.15rem; color:#0F172A; margin-bottom:6px;">Your Code Review Workspace</div>
+                <div style="font-size:0.88rem; color:#64748B;">
                     Paste your code or select a sample on the left,<br>then click <b>Review My Code ✨</b> to begin.
                 </div>
             </div>
@@ -463,7 +465,7 @@ with col_right:
             final_val = res["final_validation"]
 
             st.markdown("### Your Code Review ✨")
-            st.markdown(f"<p style='color:#475569; font-size:0.92rem; margin-top:-8px;'><b>{total_issues} issue(s) need your attention.</b></p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='color:#475569; font-size:0.92rem; margin-top:-10px;'><b>{total_issues} issue(s) need your attention.</b></p>", unsafe_allow_html=True)
 
             # Four Compact Severity Summary Cards
             st.markdown(
@@ -482,15 +484,15 @@ with col_right:
             if total_issues == 0:
                 st.markdown("<div class='summary-callout' style='background:#F0FDF4; border-color:#86EFAC; color:#15803D;'>✨ CodeGuard analyzed your code and found no issues.</div>", unsafe_allow_html=True)
             elif sec_count > 0:
-                st.markdown(f"<div class='summary-callout'>CodeGuard found {total_issues} issue(s), including {sec_count} security risk(s).</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='summary-callout'>🛡 CodeGuard found {total_issues} issue(s), including {sec_count} security risk(s).</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div class='summary-callout'>Your code has {total_issues} issue(s) that should be fixed before use.</div>", unsafe_allow_html=True)
 
-            # Workspace Tabs
+            # Compact Horizontal Navigation Tabs
             t_issues, t_sec, t_fix, t_val = st.tabs([
                 f"Issues ({total_issues})",
-                "Security",
-                "✨ Fix",
+                f"Security ({sec_count})",
+                "Fix",
                 "Validation"
             ])
 
@@ -499,26 +501,33 @@ with col_right:
                 if not consolidated:
                     st.success("✨ No issues detected.")
                 else:
-                    cat_filter = st.radio("Filter", options=["All", "Bugs", "Security", "Quality"], horizontal=True)
+                    cat_filter = st.radio("Filter", options=["All", "Security", "Bugs", "Reliability", "Quality"], horizontal=True)
                     
                     filtered = consolidated
                     if cat_filter == "Bugs":
                         filtered = [i for i in consolidated if i.category in ("Logic Bug", "Syntax Error")]
                     elif cat_filter == "Security":
                         filtered = [i for i in consolidated if i.category == "Security Vulnerability"]
-                    elif cat_filter == "Quality":
+                    elif cat_filter in ("Reliability", "Quality"):
                         filtered = [i for i in consolidated if i.category in ("Code Quality", "Performance")]
 
-                    for iss in filtered:
+                    for idx, iss in enumerate(filtered):
                         sev_badge = get_severity_badge_html(iss.severity)
                         cat_badge = get_category_badge_html(iss.category)
                         root_cause = get_root_cause_explanation(iss)
                         
-                        with st.expander(f"{iss.severity} · {iss.category} — Line {iss.line}: {iss.title}"):
+                        # First issue expanded by default, others collapsed
+                        with st.expander(f"{iss.severity} · {iss.category} — Line {iss.line}: {iss.title}", expanded=(idx == 0)):
                             st.markdown(f"**WHAT'S WRONG:** {iss.description}")
-                            st.markdown(f"**WHY IT HAPPENED:** {root_cause}")
-                            st.markdown(f"**WHY IT MATTERS / RISK:** {iss.impact}")
-                            st.markdown(f"**RECOMMENDED FIX:** {iss.recommendation}")
+                            
+                            c_w1, c_w2 = st.columns(2)
+                            with c_w1:
+                                st.markdown(f"**WHY IT MATTERS:**\n{iss.impact}")
+                            with c_w2:
+                                st.markdown(f"**RECOMMENDED FIX:**\n{iss.recommendation}")
+                            
+                            st.markdown(f"**WHY IT HAPPENED:**\n{root_cause}")
+                            
                             if iss.evidence:
                                 st.markdown("**EVIDENCE:**")
                                 st.code(redact_secrets(iss.evidence), language="python")
@@ -547,7 +556,7 @@ with col_right:
                     st.markdown("##### AFTER")
                     st.code(redact_secrets(fixed_code), language="python", line_numbers=True)
 
-                st.markdown("##### WHAT CHANGED")
+                st.markdown("##### What CodeGuard changed")
                 last_iter = res["iterations"][-1] if res.get("iterations") else None
                 if last_iter and hasattr(last_iter, "validation_result") and last_iter.validation_result.resolved_issues:
                     for resolved in last_iter.validation_result.resolved_issues:
@@ -571,13 +580,14 @@ with col_right:
                 rem_count = len(final_val.remaining_issues if final_val and final_val.remaining_issues else [])
 
                 if res["is_resolved"] or rem_count == 0:
-                    st.success("✓ Fix validated — CodeGuard re-checked the corrected code.")
-                    st.write(f"- Issues before fix: **{total_issues}**")
-                    st.write("- Issues after fix: **0**")
+                    st.success("✓ Validation Passed — No remaining issues detected by static re-analysis and AI re-review.")
                 else:
-                    st.warning("⚠ Some issues remain after validation.")
-                    st.write(f"- Issues before fix: **{total_issues}**")
-                    st.write(f"- Issues after fix: **{rem_count}**")
+                    st.warning("⚠ Validation Needs Attention — Remaining issues require manual review.")
+
+                st.write(f"- Issues Found: **{total_issues}**")
+                st.write(f"- Issues Fixed: **{total_issues - rem_count}**")
+                st.write(f"- Issues Remaining: **{rem_count}**")
+                st.write(f"- Validation Iterations: **{res['total_iterations']}**")
 
                 with st.expander("How CodeGuard reviewed this"):
                     st.write("1. Static & Structural Analysis")
