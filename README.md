@@ -1,119 +1,201 @@
-# 🛡️ CodeGuard AI — AI Code Reviewer & Bug-Fixing Agent
+# 🛡️ CodeGuard AI
 
-**Tagline**: *"Analyze. Explain. Fix. Validate."*
+> **Tagline**: *"Analyze. Explain. Fix. Validate."*
 
-CodeGuard AI is an advanced, multi-agent code analysis and automated refactoring engine built with **Google Gemini**, **Pydantic**, **Python AST**, and **Streamlit**.
+CodeGuard AI is an advanced, multi-agent AI code review and automated refactoring engine built with **Google Gemini**, **Pydantic**, **Python AST**, and **Streamlit**. 
 
-Unlike generic "paste-and-prompt" AI tools that generate unvalidated code fixes, CodeGuard AI introduces an **agentic self-review validation loop**. Generated fixes are independently re-reviewed by an AI Validator Agent combined with deterministic static analysis before presenting the final result.
-
----
-
-## 🌟 Key Features
-
-- 🤖 **5 Logically Distinct AI Agents**: Specialized agents for analysis, review, security auditing, fix generation, and independent validation.
-- ⚡ **Hybrid Analysis Engine**: Combines deterministic Python AST static parsing + Ruff linting with deep Gemini LLM reasoning.
-- 🔄 **Self-Review Loop**: Iteratively validates generated fixes up to 3 cycles to eliminate regression bugs and introduced vulnerabilities.
-- 🛡️ **Security & Secrets Audit**: Detects hardcoded secrets, `eval`/`exec`, command injection (`shell=True`), and bare `except:` clauses.
-- 📊 **Developer-First UI**: Dark-mode Streamlit dashboard with issue severity badges, unified git diff viewer, and iteration timeline.
-- 🔌 **Graceful Offline Fallback**: Operates fully in deterministic static AST mode if no Gemini API key is configured.
+Unlike generic "paste-and-prompt" AI assistants that generate unvalidated code fixes, CodeGuard AI introduces an **agentic self-review validation loop**. Generated code patches are independently re-audited by an AI Validator Agent combined with deterministic static code analysis before presenting the final verified result.
 
 ---
 
-## 🏗️ Multi-Agent Architecture
+## 1. Overview
 
+CodeGuard AI automates the software code review lifecycle by combining deterministic static code analysis with a 5-agent LLM reasoning pipeline. It identifies logic bugs, security vulnerabilities, edge cases, and performance bottlenecks, generates corrected source code, and performs automated neural and static re-reviews.
+
+---
+
+## 2. Problem Statement
+
+Developers and students spend significant time manually identifying bugs, investigating root causes, detecting security flaws, and improving code quality. 
+
+While general AI coding assistants can generate patches, blindly accepting AI-generated code introduces new bugs, regression errors, or leaves subtle vulnerabilities unresolved. Existing tools lack an independent verification step to confirm that generated fixes actually solve the identified problems without breaking functionality.
+
+---
+
+## 3. Proposed Solution
+
+CodeGuard AI resolves this by creating a closed-loop **Hybrid Static + Multi-Agent Self-Review Architecture**:
+1. **Deterministic Static Analysis**: Catches syntax errors, hardcoded secrets, `eval`/`exec`, `shell=True` injection, and bare `except:` clauses deterministically.
+2. **Multi-Agent AI Reasoning**: Specialized LLM agents analyze architecture, logical bugs, and security risks.
+3. **Automated Fix Generation**: Generates clean, production-ready corrected code.
+4. **Independent AI Re-Review**: Re-analyzes generated code to verify issue resolution and detect newly introduced regressions.
+
+---
+
+## 4. Key Features
+
+- 🤖 **5 Logically Distinct AI Agents**: Purpose-built agents for structural analysis, code review, security auditing, fix generation, and validation.
+- ⚡ **Hybrid Analysis Engine**: Combines Python AST + Ruff linter static analysis with Gemini LLM reasoning.
+- 🔄 **Self-Review Loop**: Automatically iterates up to 3 cycles until all critical/high issues pass re-review.
+- 🛡️ **Security & Secrets Audit**: Detects API key leaks, code injection (`eval`/`exec`), shell injection (`shell=True`), and exception swallowing.
+- 📊 **Developer Dashboard**: Streamlit interface with issue cards, severity badges, side-by-side diff viewer, and iteration history stepper.
+- 🔌 **Graceful Offline Fallback**: Operates fully in static AST mode if no Gemini API key is configured.
+
+---
+
+## 5. Architecture
+
+```mermaid
+flowchart TD
+    A[USER SOURCE CODE] --> B[Deterministic AST & Ruff Static Analysis]
+    A --> C[Agent 1: Code Analyzer]
+    B --> D[Unified Code Base Context]
+    C --> D
+    D --> E[Agent 2: Code Reviewer]
+    D --> F[Agent 3: Security Reviewer]
+    E --> G[Consolidated Review Findings]
+    F --> G
+    G --> H[Agent 4: Fixing Agent]
+    H --> I[Proposed Fixed Code]
+    I --> J[Agent 5: Validator Agent + AST Re-Review]
+    J --> K{Validation Passed?}
+    K -- YES --> L[Final Report & Streamlit UI]
+    K -- NO (Max 3 Iters) --> H
 ```
-                               ┌─────────────────────────┐
-                               │     USER SOURCE CODE    │
-                               └────────────┬────────────┘
-                                            │
-                    ┌───────────────────────┴───────────────────────┐
-                    ▼                                               ▼
-         Deterministic Static                             Agent 1: Code Analyzer
-        Analysis (AST + Ruff)                              (Language/Structure)
-                    │                                               │
-                    └───────────────────────┬───────────────────────┘
-                                            ▼
-                                [ Unified Code Context ]
-                                            │
-                    ┌───────────────────────┴───────────────────────┐
-                    ▼                                               ▼
-         Agent 2: Code Reviewer                         Agent 3: Security Reviewer
-        (Logic/Quality/Edge Cases)                     (Secrets/Injections/Risks)
-                    │                                               │
-                    └───────────────────────┬───────────────────────┘
-                                            ▼
-                                [ Consolidated Findings ]
-                                            │
-                                            ▼
-                                  Agent 4: Fixing Agent
-                              (Generates Corrected Code)
-                                            │
-                                            ▼
-                                 Agent 5: Validator Agent
-                             (Re-reviews Fixed Code + AST)
-                                            │
-                                 ┌──────────┴──────────┐
-                                 ▼                     ▼
-                         Issues Remaining?           Passed?
-                            /        \                  │
-                          YES         NO                │
-                           │           └────────────────┤
-                           ▼                            ▼
-                    Fix Again (Max 3)           [ Final Report & UI ]
-```
 
 ---
 
-## 🤖 Logically Distinct Agents
+## 6. Agentic Workflow
 
-1. **Agent 1 — Code Analyzer** (`agents/analyzer.py`): Parses code structure, identifies core purpose, functions, classes, and high-risk control flows. Returns `AnalysisResult`.
-2. **Agent 2 — Code Reviewer** (`agents/reviewer.py`): Performs deep review for logical bugs, runtime risks, off-by-one errors, and performance flaws. Returns `ReviewResult`.
-3. **Agent 3 — Security Reviewer** (`agents/security.py`): Audits code for hardcoded secrets, dangerous `eval`/`exec`, `shell=True` command injection, and insecure permissions. Returns security findings.
-4. **Agent 4 — Fixing Agent** (`agents/fixer.py`): Generates production-ready corrected code addressing all detected issues while preserving intended functionality. Returns `FixResult`.
-5. **Agent 5 — Validator Agent** (`agents/validator.py`): Independently re-reviews generated fixed code with static analysis and AI re-audit. Returns `ValidationResult`.
+1. **User Code Submission**: User pastes code or uploads a source file (`.py`, `.js`, `.java`, `.txt`).
+2. **Static Pre-Analysis**: Python AST visitor and Ruff linter extract line-accurate syntax, secret, and structural findings.
+3. **Agent 1 (Analyzer)**: Generates architectural overview, component inventory, and risk control flow maps.
+4. **Agents 2 & 3 (Reviewer & Security)**: Perform deep logical bug detection and security vulnerability auditing.
+5. **Findings Consolidation**: Deduplicates and prioritizes issues by severity (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`).
+6. **Agent 4 (Fixing Agent)**: Generates corrected source code addressing detected flaws.
+7. **Agent 5 (Validator Agent)**: Re-runs AST static analysis and LLM audit on fixed code.
+8. **Iterative Stepper**: Repeats fixing and validation loop if unresolved issues persist (up to 3 max iterations).
 
 ---
 
-## 🛠️ Technology Stack
+## 7. Hybrid Static + LLM Analysis
 
-- **Frontend / Dashboard**: Streamlit (Python)
-- **AI Core / LLM**: Google Gemini API via official `google-genai` SDK
+- **Deterministic Static Layer**: Eliminates LLM hallucination for structural facts. Checks Python AST nodes for `eval()`, `exec()`, `subprocess(shell=True)`, `except:`, division denominators, and regex secret patterns.
+- **Neural Reasoning Layer**: Employs Google Gemini LLM with structured Pydantic schemas to reason about context, logical edge cases, complex vulnerabilities, and fix synthesis.
+
+---
+
+## 8. Self-Review Validation Loop
+
+Do not assume `AI Generated Fix = Correct Fix`.
+
+CodeGuard AI passes every generated patch back to **Agent 5 (Validator Agent)** alongside original findings and AST re-analysis results. The loop records:
+- `resolved_issues`: Issues successfully remediated.
+- `remaining_issues`: Unresolved flaws requiring further iteration.
+- `new_issues`: Regression issues introduced by the patch.
+- `iteration_count`: Current cycle number (max 3 limit strictly enforced).
+
+---
+
+## 9. Technology Stack
+
+- **Frontend / UI**: Streamlit
+- **LLM Core**: Google Gemini API via official `google-genai` SDK (`gemini-3.5-flash-lite`)
 - **Structured Schemas**: Pydantic v2
-- **Static Code Analysis**: Python `ast` module + Ruff linter
+- **Static Analysis**: Python `ast` module + Ruff static linter
 - **Environment Management**: `python-dotenv`
 - **Testing**: Python `unittest` framework
 
 ---
 
-## 🚀 Quick Start & Local Installation
+## 10. Project Structure
+
+```
+codeguard-ai/
+│
+├── app.py                      # Main Streamlit UI dashboard
+├── requirements.txt            # Project dependencies
+├── README.md                   # Complete documentation
+├── .env.example                # Template for environment variables
+├── .gitignore                  # Git ignore rules (.env, __pycache__, etc.)
+│
+├── agents/                     # Multi-Agent Modules
+│   ├── analyzer.py             # Agent 1: Code Analyzer
+│   ├── reviewer.py             # Agent 2: Code Reviewer
+│   ├── security.py             # Agent 3: Security Reviewer
+│   ├── fixer.py                # Agent 4: Fixing Agent
+│   └── validator.py            # Agent 5: Validation Agent
+│
+├── core/                       # Core Architecture
+│   ├── llm.py                  # Gemini LLM Provider (google-genai SDK)
+│   ├── schemas.py              # Pydantic Output Schemas
+│   └── orchestrator.py         # Multi-Agent Workflow Orchestrator
+│
+├── analyzers/                  # Static Code Analysis Engine
+│   ├── static_analysis.py      # Python AST Static Analyzer
+│   └── ruff_analyzer.py        # Ruff Linter Wrapper
+│
+├── prompts/                    # Structured LLM Prompts
+│   ├── analyzer.txt
+│   ├── reviewer.txt
+│   ├── security.txt
+│   ├── fixer.txt
+│   └── validator.txt
+│
+├── utils/                      # UI Helpers & Formatting
+│   ├── file_handler.py         # File upload validation & reading
+│   └── formatting.py           # Git diff & HTML badge formatting
+│
+└── tests/                      # Automated Verification Test Suite
+    ├── test_static_analysis.py # AST unit tests
+    ├── test_orchestrator.py    # Pipeline structural tests
+    ├── test_end_to_end.py      # End-to-end pipeline tests
+    ├── test_verification_suite.py # Test Cases A, B, C verification
+    └── sample_codes/           # Sample code snippets
+```
+
+---
+
+## 11. Local Installation
 
 ### Prerequisites
 - Python 3.10+
-- A Google Gemini API Key (Get one from [Google AI Studio](https://aistudio.google.com/))
+- A Google Gemini API Key from [Google AI Studio](https://aistudio.google.com/)
 
-### 1. Clone & Setup Project
+### Setup Steps
 ```bash
+# 1. Clone repository
 git clone https://github.com/your-username/codeguard-ai.git
 cd codeguard-ai
-```
 
-### 2. Install Dependencies
-```bash
+# 2. Create virtual environment (optional)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Configure Environment
-Create a `.env` file from the provided `.env.example`:
+---
+
+## 12. Environment Configuration
+
+Create `.env` from `.env.example`:
 ```bash
 cp .env.example .env
 ```
-Edit `.env` and add your Gemini API Key:
+Edit `.env` and insert your Gemini API Key:
 ```env
 GEMINI_API_KEY=your_actual_gemini_api_key_here
 GEMINI_MODEL=gemini-3.5-flash-lite
 ```
+*(Note: `.env` is listed in `.gitignore` and will never be committed to Git.)*
 
-### 4. Run Locally
+---
+
+## 13. Running the Application
+
+Launch the Streamlit web dashboard:
 ```bash
 streamlit run app.py
 ```
@@ -121,36 +203,64 @@ Open your browser at `http://localhost:8501`.
 
 ---
 
-## 🧪 Running Unit & Integration Tests
+## 14. Example Workflow
 
-Execute the automated test suite covering AST detection, orchestrator loop, and end-to-end execution:
+1. Open `http://localhost:8501`.
+2. Click **🐛 Buggy Code** in the sidebar to load Test Case A.
+3. Click **🛡️ Run CodeGuard Review**.
+4. View metrics, issue cards, security alerts, side-by-side code diff, and self-review iteration history.
+
+---
+
+## 15. Testing
+
+Run the automated test suite covering AST detection, orchestrator loop, structured outputs, and fallback mode:
 ```bash
 python -m unittest discover -s tests -p "test_*.py"
 ```
+**Result**: `10 / 10 tests passing`.
 
 ---
 
-## ☁️ Deployment (Streamlit Community Cloud)
+## 16. Deployment (Streamlit Community Cloud)
 
-1. Push your repository to GitHub (ensure `.env` is listed in `.gitignore`).
+### Deployment Steps
+1. Push your repository to GitHub (ensure `.env` is ignored).
 2. Log into [Streamlit Community Cloud](https://streamlit.io/cloud).
-3. Connect your repository and set `Main file path` to `app.py`.
-4. Under **Advanced Settings → Secrets**, configure:
+3. Click **New App**, select your GitHub repository and branch.
+4. Set **Main file path** to `app.py`.
+5. Open **Advanced Settings → Secrets** and add:
    ```toml
    GEMINI_API_KEY = "your_actual_gemini_api_key_here"
-   GEMINI_MODEL = "gemini-2.5-flash"
+   GEMINI_MODEL = "gemini-3.5-flash-lite"
    ```
-5. Deploy!
+6. Click **Deploy**.
 
 ---
 
-## ⚠️ Disclaimer & Limitations
+## 17. Security Considerations
 
-- **Validation Disclaimer**: AI validation performs automated static re-analysis and neural re-review checks. It does not constitute mathematical formal verification.
-- **Language Scope**: Priority is given to Python analysis. JavaScript and Java support are designed into the schema for future expansion.
+- **Zero Secret Storage**: API keys are handled strictly via environment variables or session input.
+- **Safe Static Parsing**: User input code is parsed via Python `ast` without executing arbitrary code on the server.
+- **Input Sanitization**: File uploads are restricted by extension (`.py`, `.js`, `.java`, `.txt`) and size limit (256 KB).
+
+---
+
+## 18. Limitations
+
+- **Language Priority**: Primary static AST analysis is currently optimized for Python. JavaScript and Java static AST support can be expanded in future versions.
+- **Validation Scope**: AI validation performs automated static re-analysis and neural re-review checks. It does not constitute formal mathematical verification.
+
+---
+
+## 19. Future Improvements
+
+- AST sandbox execution in isolated containers.
+- Multi-language AST parsers for JavaScript (Babel/Esprima) and Java (javaparser).
+- GitHub PR Pull Request bot integration.
 
 ---
 
 ## 📜 License
 
-MIT License. Built for Generative AI Developer Internship Evaluation.
+MIT License. Developed for Generative AI Developer Internship Evaluation.
