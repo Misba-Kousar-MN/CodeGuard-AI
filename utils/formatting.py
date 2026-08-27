@@ -17,23 +17,23 @@ def get_severity_badge_html(severity: str) -> str:
     """Returns HTML styled pill badge for issue severity."""
     severity = severity.upper()
     styles = {
-        "CRITICAL": "background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.3);",
-        "HIGH": "background: rgba(249, 115, 22, 0.15); color: #FDBA74; border: 1px solid rgba(249, 115, 22, 0.3);",
-        "MEDIUM": "background: rgba(245, 158, 11, 0.15); color: #FDE68A; border: 1px solid rgba(245, 158, 11, 0.3);",
-        "LOW": "background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3);"
+        "CRITICAL": "background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5;",
+        "HIGH": "background: #FFF7ED; color: #EA580C; border: 1px solid #FDBA74;",
+        "MEDIUM": "background: #FEFCE8; color: #D97706; border: 1px solid #FDE68A;",
+        "LOW": "background: #F0F9FF; color: #0284C7; border: 1px solid #BAE6FD;"
     }
-    style = styles.get(severity, "background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.3);")
-    return f'<span style="{style} padding: 3px 10px; border-radius: 9999px; font-weight: 600; font-size: 11px; letter-spacing: 0.04em;">{severity}</span>'
+    style = styles.get(severity, "background: #F8FAFC; color: #64748B; border: 1px solid #E2E8F0;")
+    return f'<span style="{style} padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 11px; letter-spacing: 0.04em;">{severity}</span>'
 
 
 def get_category_badge_html(category: str) -> str:
     """Returns HTML styled pill badge for issue category."""
     styles = {
-        "Security Vulnerability": "background: rgba(217, 119, 6, 0.15); color: #FDE68A; border: 1px solid rgba(217, 119, 6, 0.3);",
-        "Logic Bug": "background: rgba(225, 29, 72, 0.15); color: #FECDD3; border: 1px solid rgba(225, 29, 72, 0.3);",
-        "Code Quality": "background: rgba(37, 99, 235, 0.15); color: #93C5FD; border: 1px solid rgba(37, 99, 235, 0.3);",
-        "Performance": "background: rgba(13, 148, 136, 0.15); color: #99F6E4; border: 1px solid rgba(13, 148, 136, 0.3);",
-        "Syntax Error": "background: rgba(147, 51, 234, 0.15); color: #E9D5FF; border: 1px solid rgba(147, 51, 234, 0.3);"
+        "Security Vulnerability": "background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;",
+        "Logic Bug": "background: #FFE4E6; color: #E11D48; border: 1px solid #FECDD3;",
+        "Code Quality": "background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;",
+        "Performance": "background: #CCFBF1; color: #0F766E; border: 1px solid #99F6E4;",
+        "Syntax Error": "background: #F3E8FF; color: #7E22CE; border: 1px solid #E9D5FF;"
     }
-    style = styles.get(category, "background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.3);")
-    return f'<span style="{style} padding: 3px 10px; border-radius: 9999px; font-weight: 500; font-size: 11px;">{category}</span>'
+    style = styles.get(category, "background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;")
+    return f'<span style="{style} padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 11px;">{category}</span>'
