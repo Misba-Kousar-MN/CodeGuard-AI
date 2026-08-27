@@ -12,7 +12,7 @@ from core.orchestrator import CodeGuardOrchestrator
 from utils.file_handler import validate_uploaded_file, read_uploaded_file
 from utils.formatting import generate_unified_diff, get_severity_badge_html, get_category_badge_html, redact_secrets
 
-# Page Configuration - Full Width SaaS Workspace
+# Page Configuration - Fixed Desktop Application Workspace
 st.set_page_config(
     page_title="CodeGuard AI — Analyze. Explain. Fix. Validate.",
     page_icon="🛡️",
@@ -20,7 +20,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Robust Professional CSS System
+# Custom SaaS Platform Design System & CSS Reset
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -28,7 +28,8 @@ CUSTOM_CSS = """
     html, body, .stApp {
         background-color: #F8FAFC !important;
         color: #0F172A !important;
-        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+        overflow-x: hidden !important;
     }
 
     #MainMenu {visibility: hidden;}
@@ -36,19 +37,19 @@ CUSTOM_CSS = """
     header {visibility: hidden;}
     .stDeployButton {display: none;}
 
-    /* Page Container */
+    /* Page Container Dimensions */
     .block-container {
         max-width: 1440px !important;
         width: calc(100% - 32px) !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
         padding-left: 16px !important;
         padding-right: 16px !important;
         margin: 0 auto !important;
     }
 
     /* Fixed Compact Header (64px) */
-    .header-bar {
+    .header-bar-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -60,12 +61,12 @@ CUSTOM_CSS = """
         margin-bottom: 12px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
-    .brand-left {
+    .brand-left-group {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-    .brand-icon-box {
+    .brand-logo-sq {
         width: 34px;
         height: 34px;
         background: #EFF6FF;
@@ -76,26 +77,20 @@ CUSTOM_CSS = """
         justify-content: center;
         font-size: 18px;
     }
-    .brand-title-text {
+    .brand-title-lbl {
         font-size: 18px;
         font-weight: 700;
         color: #0F172A;
         letter-spacing: -0.01em;
     }
-    .brand-tagline-text {
+    .brand-sub-lbl {
         font-size: 12px;
         color: #64748B;
         font-weight: 400;
         margin-left: 8px;
     }
-    
-    /* Header Right Status Badges */
-    .header-right-badges {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .status-badge-ready {
+
+    .badge-ready-pill {
         background: #F0FDF4;
         color: #16A34A;
         border: 1px solid #DCFCE7;
@@ -107,7 +102,7 @@ CUSTOM_CSS = """
         display: inline-flex;
         align-items: center;
     }
-    .status-badge-static {
+    .badge-static-pill {
         background: #FFF7ED;
         color: #EA580C;
         border: 1px solid #FFEDD5;
@@ -120,7 +115,7 @@ CUSTOM_CSS = """
         align-items: center;
     }
 
-    /* Buttons Override */
+    /* Buttons Overrides */
     .stButton > button {
         border-radius: 8px !important;
         font-family: 'Inter', sans-serif !important;
@@ -139,14 +134,14 @@ CUSTOM_CSS = """
         color: #0F172A !important;
     }
 
-    /* Primary Blue Action Button */
+    /* Primary Action Blue Button */
     .stButton > button[data-baseweb="button"][kind="primary"],
     div[data-testid="stFormSubmitButton"] > button {
         background-color: #2563EB !important;
         color: #FFFFFF !important;
         border: none !important;
         font-weight: 600 !important;
-        height: 40px !important;
+        height: 42px !important;
         box-shadow: 0 1px 3px rgba(37, 99, 235, 0.2) !important;
     }
     .stButton > button[data-baseweb="button"][kind="primary"]:hover {
@@ -154,7 +149,7 @@ CUSTOM_CSS = """
         color: #FFFFFF !important;
     }
 
-    /* IDE Code Editor Dark Styling */
+    /* Dark Code Editor Styling */
     .stTextArea textarea {
         border-radius: 10px !important;
         border: 1px solid #1E293B !important;
@@ -181,15 +176,15 @@ CUSTOM_CSS = """
         height: 38px !important;
     }
 
-    /* Severity Summary Bar Cards (Item 6) */
-    .sev-summary-row {
+    /* Four Real Severity Cards (Item 9) */
+    .sev-four-grid {
         display: flex;
         gap: 10px;
         margin-bottom: 12px;
     }
-    .sev-summary-card {
+    .sev-card-box {
         background: #FFFFFF;
-        border: 1px solid #E2E8F0;
+        border: 1px solid #E5E7EB;
         border-radius: 10px;
         height: 72px;
         flex: 1;
@@ -199,12 +194,12 @@ CUSTOM_CSS = """
         justify-content: center;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
-    .sev-summary-num {
+    .sev-card-digit {
         font-size: 24px;
         font-weight: 700;
         line-height: 1.1;
     }
-    .sev-summary-lbl {
+    .sev-card-tag {
         font-size: 11px;
         font-weight: 600;
         color: #64748B;
@@ -212,8 +207,8 @@ CUSTOM_CSS = """
         margin-top: 2px;
     }
 
-    /* Information Banner (Item 10) */
-    .info-banner-box {
+    /* Info Alert Banner */
+    .info-alert-strip {
         background: #EFF6FF;
         border: 1px solid #BFDBFE;
         border-radius: 8px;
@@ -228,8 +223,8 @@ CUSTOM_CSS = """
         margin-bottom: 12px;
     }
 
-    /* Empty Review Workspace State (Item 4) */
-    .empty-state-card {
+    /* Empty State Box (Item 4) */
+    .empty-state-card-box {
         text-align: center;
         padding: 50px 20px;
         background: #FFFFFF;
@@ -237,14 +232,14 @@ CUSTOM_CSS = """
         border-radius: 12px;
         margin-top: 30px;
     }
-    .empty-state-heading {
+    .empty-state-title-text {
         font-size: 16px;
         font-weight: 600;
         color: #0F172A;
         margin-top: 10px;
         margin-bottom: 4px;
     }
-    .empty-state-subtext {
+    .empty-state-desc-text {
         font-size: 13px;
         color: #64748B;
         max-width: 280px;
@@ -327,21 +322,23 @@ if "code_input" not in st.session_state:
     st.session_state.code_input = ""
 if "pipeline_result" not in st.session_state:
     st.session_state.pipeline_result = None
+if "selected_filter" not in st.session_state:
+    st.session_state.selected_filter = "All"
 
 # Server-Side Engine Initialization
 llm_provider = GeminiLLMProvider()
 
-# 1. FIXED HEADER (Item 1)
+# 1. FIXED HEADER (64px Height - Item 1)
 col_nav1, col_nav2 = st.columns([3, 1])
 with col_nav1:
     st.markdown(
         """
-        <div class="header-bar">
-            <div class="brand-left">
-                <div class="brand-icon-box">🛡️</div>
+        <div class="header-bar-container">
+            <div class="brand-left-group">
+                <div class="brand-logo-sq">🛡️</div>
                 <div>
-                    <span class="brand-title-text">CodeGuard AI</span>
-                    <span class="brand-tagline-text">Analyze. Explain. Fix. Validate.</span>
+                    <span class="brand-title-lbl">CodeGuard AI</span>
+                    <span class="brand-sub-lbl">Analyze. Explain. Fix. Validate.</span>
                 </div>
             </div>
         </div>
@@ -359,7 +356,7 @@ with col_nav2:
 st.markdown(
     f"""
     <div style="text-align:right; margin-top:-24px; margin-bottom:10px;">
-        <span class="{'status-badge-ready' if llm_provider.is_available() else 'status-badge-static'}">
+        <span class="{'badge-ready-pill' if llm_provider.is_available() else 'badge-static-pill'}">
             {'● AI Ready (' + llm_provider.model + ')' if llm_provider.is_available() else '○ Static Analysis Only'}
         </span>
     </div>
@@ -411,7 +408,7 @@ with col_left:
     line_cnt = len(active_code_str.splitlines()) if active_code_str else 0
     char_cnt = len(active_code_str) if active_code_str else 0
 
-    # Editor Footer (Item 10)
+    # Editor Footer (Item 7 & 8)
     col_f1, col_f2 = st.columns([1, 1])
     with col_f1:
         st.markdown(
@@ -432,7 +429,7 @@ with col_left:
         with col_btn2:
             run_btn = st.button("Review My Code ✨", type="primary", use_container_width=True)
 
-    # Sample Selector (Item 7)
+    # Sample Selector (Item 8)
     sample_choice = st.selectbox(
         "✨ Try a sample ▾",
         options=["Select a sample...", "Security Issues", "Logic Bugs", "Reliability Issues", "Code Quality", "Clean Code"],
@@ -484,19 +481,19 @@ with col_left:
             st.rerun()
 
 # ====================================================
-# RIGHT COLUMN: CODE REVIEW WORKSPACE (55%) (Item 3)
+# RIGHT COLUMN: CODE REVIEW WORKSPACE (55%) (Item 3 & 6)
 # ====================================================
 with col_right:
-    # Wrap in Streamlit Container with Internal Scroll (Item 3)
+    # Wrap in Streamlit Container with Internal Scroll (Item 2 & 6)
     with st.container(height=680):
         # 4. EMPTY STATE (Item 4)
         if st.session_state.pipeline_result is None:
             st.markdown(
                 """
-                <div class="empty-state-card">
+                <div class="empty-state-card-box">
                     <div style="font-size: 32px; color: #2563EB;">✨</div>
-                    <div class="empty-state-heading">Your Code Review Workspace</div>
-                    <div class="empty-state-subtext">
+                    <div class="empty-state-title-text">Your Code Review Workspace</div>
+                    <div class="empty-state-desc-text">
                         Paste your code or select a sample on the left,<br>then click <b>Review My Code ✨</b> to begin.
                     </div>
                 </div>
@@ -532,26 +529,26 @@ with col_right:
                 st.markdown("<h2 style='font-size: 24px; font-weight: 700; color: #0F172A; margin-bottom: 2px;'>Your Code Review ✨</h2>", unsafe_allow_html=True)
                 st.markdown(f"<p style='color:#64748B; font-size:14px; margin-top:-6px; margin-bottom:12px;'><b>{total_issues} issue(s) need your attention.</b></p>", unsafe_allow_html=True)
 
-                # 6. SEVERITY SUMMARY (Item 6 - Four Real Cards)
+                # 9. SEVERITY SUMMARY (Item 9 - Four Real Cards)
                 st.markdown(
                     f"""
-                    <div class="sev-summary-row">
-                        <div class="sev-summary-card"><div class="sev-summary-num" style="color:#DC2626;">{get_count('CRITICAL')}</div><div class="sev-summary-lbl">Critical</div></div>
-                        <div class="sev-summary-card"><div class="sev-summary-num" style="color:#EA580C;">{get_count('HIGH')}</div><div class="sev-summary-lbl">High</div></div>
-                        <div class="sev-summary-card"><div class="sev-summary-num" style="color:#D97706;">{get_count('MEDIUM')}</div><div class="sev-summary-lbl">Medium</div></div>
-                        <div class="sev-summary-card"><div class="sev-summary-num" style="color:#16A34A;">{get_count('LOW')}</div><div class="sev-summary-lbl">Low</div></div>
+                    <div class="sev-four-grid">
+                        <div class="sev-card-box"><div class="sev-card-digit" style="color:#DC2626;">{get_count('CRITICAL')}</div><div class="sev-card-tag">Critical</div></div>
+                        <div class="sev-card-box"><div class="sev-card-digit" style="color:#EA580C;">{get_count('HIGH')}</div><div class="sev-card-tag">High</div></div>
+                        <div class="sev-card-box"><div class="sev-card-digit" style="color:#D97706;">{get_count('MEDIUM')}</div><div class="sev-card-tag">Medium</div></div>
+                        <div class="sev-card-box"><div class="sev-card-digit" style="color:#16A34A;">{get_count('LOW')}</div><div class="sev-card-tag">Low</div></div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-                # Info Alert Banner (Item 10)
+                # Info Alert Banner
                 if total_issues == 0:
-                    st.markdown("<div class='info-banner-box' style='background:#F0FDF4; border-color:#DCFCE7; color:#15803D;'>✨ CodeGuard analyzed your code and found no issues.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='info-alert-strip' style='background:#F0FDF4; border-color:#DCFCE7; color:#15803D;'>✨ CodeGuard analyzed your code and found no issues.</div>", unsafe_allow_html=True)
                 elif sec_count > 0:
-                    st.markdown(f"<div class='info-banner-box'>🛡 CodeGuard found {total_issues} issue(s), including {sec_count} security risk(s).</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='info-alert-strip'>🛡 CodeGuard found {total_issues} issue(s), including {sec_count} security risk(s).</div>", unsafe_allow_html=True)
                 else:
-                    st.markdown(f"<div class='info-banner-box'>Your code has {total_issues} issue(s) that should be fixed before use.</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='info-alert-strip'>Your code has {total_issues} issue(s) that should be fixed before use.</div>", unsafe_allow_html=True)
 
                 # Review Navigation Tabs
                 t_issues, t_sec, t_fix, t_val = st.tabs([
@@ -561,13 +558,36 @@ with col_right:
                     "Validation"
                 ])
 
-                # 8. ISSUE LIST (Item 8)
+                # 1. EXPLICIT VISIBLE BUTTON CHIPS FOR FILTERS (Item 1 - NO DOT CONTROLS)
                 with t_issues:
                     if not consolidated:
                         st.success("✨ No issues detected.")
                     else:
-                        cat_filter = st.radio("Filter Category", options=["All", "Security", "Bugs", "Reliability", "Quality"], horizontal=True)
+                        st.markdown("<p style='font-size:12px; font-weight:600; color:#64748B; margin-bottom:4px;'>FILTER ISSUES BY CATEGORY:</p>", unsafe_allow_html=True)
+                        col_flt1, col_flt2, col_flt3, col_flt4, col_flt5 = st.columns(5)
                         
+                        with col_flt1:
+                            if st.button("All", use_container_width=True, type="primary" if st.session_state.selected_filter == "All" else "secondary"):
+                                st.session_state.selected_filter = "All"
+                                st.rerun()
+                        with col_flt2:
+                            if st.button("Security", use_container_width=True, type="primary" if st.session_state.selected_filter == "Security" else "secondary"):
+                                st.session_state.selected_filter = "Security"
+                                st.rerun()
+                        with col_flt3:
+                            if st.button("Bugs", use_container_width=True, type="primary" if st.session_state.selected_filter == "Bugs" else "secondary"):
+                                st.session_state.selected_filter = "Bugs"
+                                st.rerun()
+                        with col_flt4:
+                            if st.button("Reliability", use_container_width=True, type="primary" if st.session_state.selected_filter == "Reliability" else "secondary"):
+                                st.session_state.selected_filter = "Reliability"
+                                st.rerun()
+                        with col_flt5:
+                            if st.button("Quality", use_container_width=True, type="primary" if st.session_state.selected_filter == "Quality" else "secondary"):
+                                st.session_state.selected_filter = "Quality"
+                                st.rerun()
+
+                        cat_filter = st.session_state.selected_filter
                         filtered = consolidated
                         if cat_filter == "Bugs":
                             filtered = [i for i in consolidated if i.category in ("Logic Bug", "Syntax Error")]
@@ -579,7 +599,7 @@ with col_right:
                         for idx, iss in enumerate(filtered):
                             root_cause = get_root_cause_explanation(iss)
                             
-                            # Only ONE issue expanded by default (Item 8)
+                            # 4. COLLAPSED & EXPANDED ISSUE CARDS (Item 4)
                             with st.expander(f"{iss.severity} · {iss.category} — Line {iss.line}: {iss.title}", expanded=(idx == 0)):
                                 st.markdown(f"<span style='font-size:11px; color:#64748B; font-weight:600; text-transform:uppercase;'>WHAT'S WRONG</span><br><span style='font-size:13px; color:#0F172A;'>{iss.description}</span>", unsafe_allow_html=True)
                                 
@@ -591,7 +611,7 @@ with col_right:
                                 
                                 st.markdown(f"<span style='font-size:11px; color:#64748B; font-weight:600; text-transform:uppercase;'>WHY IT HAPPENED</span><br><span style='font-size:13px;'>{root_cause}</span>", unsafe_allow_html=True)
                                 
-                                # 9. EVIDENCE (Item 9 - Compact Syntax Highlighted Code Block)
+                                # 5. COMPACT EVIDENCE CODE BLOCK (Item 5)
                                 if iss.evidence:
                                     st.markdown(f"<span style='font-size:11px; color:#64748B; font-weight:600; text-transform:uppercase;'>EVIDENCE (Line {iss.line})</span>", unsafe_allow_html=True)
                                     st.code(redact_secrets(iss.evidence), language="python")
