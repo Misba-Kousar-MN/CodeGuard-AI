@@ -14,26 +14,26 @@ def generate_unified_diff(old_code: str, new_code: str, old_label: str = "Origin
 
 
 def get_severity_badge_html(severity: str) -> str:
-    """Returns HTML styled badge for issue severity."""
+    """Returns HTML styled pill badge for issue severity."""
     severity = severity.upper()
-    colors = {
-        "CRITICAL": "#ff4d4f",
-        "HIGH": "#ff7a45",
-        "MEDIUM": "#ffa940",
-        "LOW": "#73d13d"
+    styles = {
+        "CRITICAL": "background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.3);",
+        "HIGH": "background: rgba(249, 115, 22, 0.15); color: #FDBA74; border: 1px solid rgba(249, 115, 22, 0.3);",
+        "MEDIUM": "background: rgba(245, 158, 11, 0.15); color: #FDE68A; border: 1px solid rgba(245, 158, 11, 0.3);",
+        "LOW": "background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.3);"
     }
-    bg_color = colors.get(severity, "#8c8c8c")
-    return f'<span style="background-color: {bg_color}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 12px;">{severity}</span>'
+    style = styles.get(severity, "background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.3);")
+    return f'<span style="{style} padding: 3px 10px; border-radius: 9999px; font-weight: 600; font-size: 11px; letter-spacing: 0.04em;">{severity}</span>'
 
 
 def get_category_badge_html(category: str) -> str:
-    """Returns HTML styled badge for issue category."""
-    colors = {
-        "Security Vulnerability": "#d48806",
-        "Logic Bug": "#cf1322",
-        "Code Quality": "#096dd9",
-        "Performance": "#389e0d",
-        "Syntax Error": "#722ed1"
+    """Returns HTML styled pill badge for issue category."""
+    styles = {
+        "Security Vulnerability": "background: rgba(217, 119, 6, 0.15); color: #FDE68A; border: 1px solid rgba(217, 119, 6, 0.3);",
+        "Logic Bug": "background: rgba(225, 29, 72, 0.15); color: #FECDD3; border: 1px solid rgba(225, 29, 72, 0.3);",
+        "Code Quality": "background: rgba(37, 99, 235, 0.15); color: #93C5FD; border: 1px solid rgba(37, 99, 235, 0.3);",
+        "Performance": "background: rgba(13, 148, 136, 0.15); color: #99F6E4; border: 1px solid rgba(13, 148, 136, 0.3);",
+        "Syntax Error": "background: rgba(147, 51, 234, 0.15); color: #E9D5FF; border: 1px solid rgba(147, 51, 234, 0.3);"
     }
-    bg_color = colors.get(category, "#595959")
-    return f'<span style="background-color: {bg_color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">{category}</span>'
+    style = styles.get(category, "background: rgba(148, 163, 184, 0.15); color: #CBD5E1; border: 1px solid rgba(148, 163, 184, 0.3);")
+    return f'<span style="{style} padding: 3px 10px; border-radius: 9999px; font-weight: 500; font-size: 11px;">{category}</span>'
