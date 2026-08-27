@@ -252,24 +252,6 @@ if "pipeline_result" not in st.session_state:
 env_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")
 env_model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
-# Top Application Header Bar
-st.markdown(
-    f"""
-    <div class="app-header">
-        <div>
-            <div class="brand-title">◇ CodeGuard AI</div>
-            <div class="brand-tagline">Analyze. Explain. Fix. Validate.</div>
-        </div>
-        <div>
-            <span class="{'status-badge-active' if env_key else 'status-badge-offline'}">
-                {'🟢 AI Engine ● Ready (' + env_model + ')' if env_key else '🟠 AI Engine ● Offline (Static AST)'}
-            </span>
-        </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
 # Collapsible Settings Bar for API Key & Model Configuration
 with st.expander("⚙️ Engine & API Configuration Settings", expanded=False):
     col_cfg1, col_cfg2 = st.columns(2)
@@ -289,6 +271,24 @@ with st.expander("⚙️ Engine & API Configuration Settings", expanded=False):
 
 active_api_key = user_key.strip() or env_key.strip()
 llm_provider = GeminiLLMProvider(api_key=active_api_key, model=selected_model)
+
+# Top Application Header Bar
+st.markdown(
+    f"""
+    <div class="app-header">
+        <div>
+            <div class="brand-title">◇ CodeGuard AI</div>
+            <div class="brand-tagline">Analyze. Explain. Fix. Validate.</div>
+        </div>
+        <div>
+            <span class="{'status-badge-active' if llm_provider.is_available() else 'status-badge-offline'}">
+                {'🟢 AI Engine ● Ready (' + selected_model + ')' if llm_provider.is_available() else '🟠 AI Engine ● Offline (Static AST)'}
+            </span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Hero Landing Section
 st.markdown(
