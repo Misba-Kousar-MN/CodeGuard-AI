@@ -174,8 +174,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # Sample Code Snippets for Demonstrations
-BUGGY_SAMPLE = """import os
-import subprocess
+BUGGY_SAMPLE = """import subprocess
 
 API_KEY = "AIzaSyD9x8K11223344556677889900aabbcc"
 
@@ -205,18 +204,11 @@ def read_data_file(filename):
         return None
 """
 
-CLEAN_SAMPLE = """import os
-from typing import Optional
+CLEAN_SAMPLE = """def add(a, b):
+    return a + b
 
-def compute_average(numbers: list[float]) -> Optional[float]:
-    \"\"\"Computes average safely checking for empty lists.\"\"\"
-    if not numbers:
-        return None
-    return sum(numbers) / len(numbers)
-
-def fetch_environment_key() -> str:
-    \"\"\"Safely retrieves API key from environment.\"\"\"
-    return os.getenv("API_KEY", "")
+result = add(2, 3)
+print(result)
 """
 
 # Session State Initialization
@@ -225,9 +217,8 @@ if "code_input" not in st.session_state:
 if "pipeline_result" not in st.session_state:
     st.session_state.pipeline_result = None
 
-# Load API Key from environment
-env_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")
-env_model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+# Initialize LLM Provider Server-Side (No User API Key Input Box)
+llm_provider = GeminiLLMProvider()
 
 # Sticky Compact Header Bar
 col_h1, col_h2 = st.columns([3, 1])
@@ -245,19 +236,17 @@ with col_h1:
     )
 with col_h2:
     with st.expander("⚙ Settings", expanded=False):
-        user_key = st.text_input("Gemini API Key", value=env_key, type="password")
-        selected_model = st.selectbox("Gemini Model", options=["gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-2.5-flash"], index=0)
-
-active_api_key = user_key.strip() if 'user_key' in locals() and user_key.strip() else env_key.strip()
-model_choice = selected_model if 'selected_model' in locals() else env_model
-llm_provider = GeminiLLMProvider(api_key=active_api_key, model=model_choice)
+        st.markdown(f"**AI Engine Status:** {'● Connected' if llm_provider.is_available() else '○ Offline (Static AST Only)'}")
+        st.markdown(f"**Model:** `{llm_provider.model}`")
+        if not llm_provider.is_available():
+            st.caption("AI engine unavailable — static analysis only.")
 
 # Header Engine Status Badge
 st.markdown(
     f"""
     <div style="text-align:right; margin-top:-22px; margin-bottom:8px;">
         <span class="{'status-badge-active' if llm_provider.is_available() else 'status-badge-offline'}">
-            {'● AI Ready (' + model_choice + ')' if llm_provider.is_available() else '● AI Offline (Static AST)'}
+            {'● AI Ready (' + llm_provider.model + ')' if llm_provider.is_available() else '○ AI Offline (Static AST)'}
         </span>
     </div>
     """,
@@ -285,16 +274,16 @@ if st.session_state.pipeline_result is None:
     st.markdown("<p style='color:#64748B; font-size:0.84rem; margin-top:-8px;'>Paste your code here or upload a source file.</p>", unsafe_allow_html=True)
 
     input_method = st.radio("Input Method", options=["Code Editor", "Upload File"], horizontal=True, label_visibility="collapsed")
-    uploaded_content = None
 
     if input_method == "Code Editor":
-        code_text = st.text_area(
+        edited_code = st.text_area(
             label="Code Editor Box",
             value=st.session_state.code_input,
             height=340,
             placeholder="Paste your code here...",
             label_visibility="collapsed"
         )
+        st.session_state.code_input = edited_code
     else:
         uploaded_file = st.file_uploader("Drop your source file here (.py, .js, .java, .txt)", type=["py", "js", "java", "txt"])
         if uploaded_file is not None:
@@ -307,12 +296,8 @@ if st.session_state.pipeline_result is None:
                 if read_err:
                     st.error(read_err)
                 else:
-                    uploaded_content = content
+                    st.session_state.code_input = content
                     st.success(f"✓ {uploaded_file.name} loaded ({len(content.splitlines())} lines).")
-        code_text = st.session_state.code_input
-
-    active_code = uploaded_content if uploaded_content else code_text
-    st.session_state.code_input = active_code
 
     # Controls Row Under Editor
     col_c1, col_c2, col_c3 = st.columns([2, 1, 2])
@@ -339,9 +324,10 @@ if st.session_state.pipeline_result is None:
         st.session_state.code_input = CLEAN_SAMPLE
         st.rerun()
 
-    # Process Review Action
-    if 'run_btn' in locals() and run_btn:
-        if not active_code or not active_code.strip():
+    # Process Review Action Reliably
+    if run_btn:
+        code_to_review = st.session_state.code_input.strip()
+        if not code_to_review:
             st.warning("Add some code before starting the review.", icon="⚠️")
         else:
             progress_box = st.empty()
@@ -351,20 +337,26 @@ if st.session_state.pipeline_result is None:
                     <div class="card-box" style="text-align:center; padding:18px; background:#F0F9FF; border:1px solid #BAE6FD;">
                         <div style="font-weight:700; color:#0284C7; font-size:1.05rem;">CodeGuard is reviewing your code ✦</div>
                         <div style="font-size:0.85rem; color:#0369A1; margin-top:6px;">
-                            ✓ Checking for bugs &nbsp;|&nbsp; ✓ Checking security &nbsp;|&nbsp; ✓ Understanding code &nbsp;|&nbsp; ◌ Preparing fixes
+                            ✓ Code analysis &nbsp;|&nbsp; ✓ Bug detection &nbsp;|&nbsp; ✓ Security audit &nbsp;|&nbsp; ◌ Generating fixes &nbsp;|&nbsp; ◌ Validating fixes
                         </div>
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-            orchestrator = CodeGuardOrchestrator(llm_provider=llm_provider)
-            res = orchestrator.execute_pipeline(
-                code=active_code,
-                language=language,
-                max_iterations=3
-            )
-            st.session_state.pipeline_result = res
+            try:
+                orchestrator = CodeGuardOrchestrator(llm_provider=llm_provider)
+                res = orchestrator.execute_pipeline(
+                    code=code_to_review,
+                    language=language,
+                    max_iterations=3
+                )
+                st.session_state.pipeline_result = res
+            except Exception as e:
+                print(f"[CodeGuard App Error] {e}")
+                st.session_state.pipeline_result = {
+                    "error": "AI review couldn't be completed because the Gemini service rejected the request or encountered a network error. Static analysis fallback is available."
+                }
             progress_box.empty()
             st.rerun()
 
@@ -380,7 +372,7 @@ else:
         st.rerun()
 
     if "error" in res:
-        st.error(f"CodeGuard couldn't connect to the AI engine: {res['error']}")
+        st.error(res["error"])
         if st.button("Try Again"):
             st.session_state.pipeline_result = None
             st.rerun()

@@ -9,6 +9,28 @@ load_dotenv()
 
 T = TypeVar("T", bound=BaseModel)
 
+def resolve_server_side_key() -> str:
+    """
+    Resolves Gemini API Key server-side in precedence order:
+    1. st.secrets["GEMINI_API_KEY"] or st.secrets["AI_agent"]
+    2. os.getenv("GEMINI_API_KEY")
+    3. os.getenv("AI_agent")
+    4. ""
+    """
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets") and st.secrets:
+            if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
+                return str(st.secrets["GEMINI_API_KEY"]).strip()
+            if "AI_agent" in st.secrets and st.secrets["AI_agent"]:
+                return str(st.secrets["AI_agent"]).strip()
+    except Exception:
+        pass
+
+    key = os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")
+    return key.strip() if key else ""
+
+
 class GeminiLLMProvider:
     """
     LLM Provider Abstraction using the official Google GenAI SDK (google-genai).
@@ -19,8 +41,18 @@ class GeminiLLMProvider:
         if api_key is not None:
             self.api_key = api_key.strip()
         else:
-            self.api_key = (os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")).strip()
-        self.model = model or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+            self.api_key = resolve_server_side_key()
+            
+        # Model precedence: parameter -> st.secrets -> os.getenv -> default
+        model_secret = ""
+        try:
+            import streamlit as st
+            if hasattr(st, "secrets") and st.secrets and "GEMINI_MODEL" in st.secrets:
+                model_secret = str(st.secrets["GEMINI_MODEL"]).strip()
+        except Exception:
+            pass
+
+        self.model = model or model_secret or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
         self._client = None
 
         if self.api_key:
