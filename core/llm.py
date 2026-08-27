@@ -16,7 +16,10 @@ class GeminiLLMProvider:
     """
 
     def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")
+        if api_key is not None:
+            self.api_key = api_key
+        else:
+            self.api_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("AI_agent", "")
         self.model = model or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
         self._client = None
 
