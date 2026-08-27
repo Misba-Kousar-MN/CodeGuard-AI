@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Sky-Blue Soft Cute Premium Theme CSS
+# Sky-Blue Compact UX CSS
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -35,27 +35,35 @@ CUSTOM_CSS = """
     header {visibility: hidden;}
     .stDeployButton {display: none;}
 
-    /* Sticky Header */
+    /* Centered Max Width Layout */
+    .block-container {
+        max-width: 980px !important;
+        padding-top: 1rem !important;
+        padding-bottom: 2rem !important;
+        margin: 0 auto !important;
+    }
+
+    /* Sticky Compact Header Bar */
     .app-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 20px;
-        background: rgba(255, 255, 255, 0.9);
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border: 1px solid #BAE6FD;
         border-radius: 12px;
         margin-bottom: 12px;
-        box-shadow: 0 4px 15px -3px rgba(56, 189, 248, 0.1);
+        box-shadow: 0 4px 12px -2px rgba(56, 189, 248, 0.08);
     }
     .brand-title {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 800;
         color: #0284C7;
         letter-spacing: -0.02em;
     }
     .brand-tagline {
-        font-size: 0.76rem;
+        font-size: 0.75rem;
         color: #64748B;
         margin-left: 8px;
     }
@@ -63,33 +71,33 @@ CUSTOM_CSS = """
         background: #F0FDF4;
         color: #16A34A;
         border: 1px solid #86EFAC;
-        padding: 4px 12px;
+        padding: 4px 10px;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
     }
     .status-badge-offline {
         background: #FFF7ED;
         color: #EA580C;
         border: 1px solid #FDBA74;
-        padding: 4px 12px;
+        padding: 4px 10px;
         border-radius: 9999px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
     }
 
     /* Hero Section */
     .hero-container {
-        padding: 8px 0 14px 0;
+        padding: 4px 0 10px 0;
     }
     .hero-title {
-        font-size: 1.5rem;
+        font-size: 1.45rem;
         font-weight: 800;
         color: #0F172A;
         margin-bottom: 2px;
     }
     .hero-subtitle {
-        font-size: 0.92rem;
+        font-size: 0.88rem;
         color: #475569;
     }
 
@@ -97,21 +105,21 @@ CUSTOM_CSS = """
     .card-box {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 20px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 20px -4px rgba(56, 189, 248, 0.08);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 15px -4px rgba(56, 189, 248, 0.06);
     }
 
-    /* Text Area Styling */
+    /* Code Area Styling */
     .stTextArea textarea {
         border-radius: 10px !important;
         border: 1px solid #CBD5E1 !important;
         background: #F8FAFC !important;
         color: #0F172A !important;
         font-family: 'JetBrains Mono', monospace !important;
-        font-size: 0.88rem !important;
-        height: 380px !important;
+        font-size: 0.86rem !important;
+        height: 340px !important;
     }
 
     pre, code {
@@ -119,36 +127,47 @@ CUSTOM_CSS = """
         border-radius: 8px !important;
     }
 
-    /* Button Hierarchy */
     .stButton > button {
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         font-weight: 700 !important;
     }
 
-    /* Metric Pills */
-    .metric-pill-container {
+    /* Small Metric Cards */
+    .metric-summary-bar {
         display: flex;
-        gap: 10px;
-        margin-bottom: 16px;
+        gap: 8px;
+        margin-bottom: 12px;
         flex-wrap: wrap;
     }
-    .metric-pill {
+    .small-metric-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 8px 16px;
-        min-width: 100px;
+        border-radius: 8px;
+        padding: 6px 14px;
+        min-width: 85px;
         text-align: center;
+        box-shadow: 0 2px 6px -1px rgba(0, 0, 0, 0.03);
     }
-    .metric-pill-num {
-        font-size: 1.3rem;
+    .small-metric-num {
+        font-size: 1.15rem;
         font-weight: 800;
     }
-    .metric-pill-lbl {
-        font-size: 0.72rem;
+    .small-metric-lbl {
+        font-size: 0.68rem;
         color: #64748B;
         font-weight: 600;
         text-transform: uppercase;
+    }
+
+    .explanation-callout {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: 0.88rem;
+        color: #0369A1;
+        font-weight: 600;
+        margin-bottom: 12px;
     }
 </style>
 """
@@ -236,7 +255,7 @@ llm_provider = GeminiLLMProvider(api_key=active_api_key, model=model_choice)
 # Header Engine Status Badge
 st.markdown(
     f"""
-    <div style="text-align:right; margin-top:-22px; margin-bottom:12px;">
+    <div style="text-align:right; margin-top:-22px; margin-bottom:8px;">
         <span class="{'status-badge-active' if llm_provider.is_available() else 'status-badge-offline'}">
             {'● AI Ready (' + model_choice + ')' if llm_provider.is_available() else '● AI Offline (Static AST)'}
         </span>
@@ -246,7 +265,7 @@ st.markdown(
 )
 
 # ----------------------------------------------------
-# SCREEN 1: INPUT STATE (Shown when no active review exists)
+# SCREEN 1: COMPACT INPUT STATE
 # ----------------------------------------------------
 if st.session_state.pipeline_result is None:
 
@@ -262,8 +281,8 @@ if st.session_state.pipeline_result is None:
     )
 
     # Main Code Input Card
-    st.markdown("### LET'S REVIEW YOUR CODE")
-    st.markdown("<p style='color:#64748B; font-size:0.9rem; margin-top:-6px;'>Paste your code here or upload a source file.</p>", unsafe_allow_html=True)
+    st.markdown("##### LET'S REVIEW YOUR CODE")
+    st.markdown("<p style='color:#64748B; font-size:0.84rem; margin-top:-8px;'>Paste your code here or upload a source file.</p>", unsafe_allow_html=True)
 
     input_method = st.radio("Input Method", options=["Code Editor", "Upload File"], horizontal=True, label_visibility="collapsed")
     uploaded_content = None
@@ -272,7 +291,7 @@ if st.session_state.pipeline_result is None:
         code_text = st.text_area(
             label="Code Editor Box",
             value=st.session_state.code_input,
-            height=380,
+            height=340,
             placeholder="Paste your code here...",
             label_visibility="collapsed"
         )
@@ -329,10 +348,10 @@ if st.session_state.pipeline_result is None:
             with progress_box.container():
                 st.markdown(
                     """
-                    <div class="card-box" style="text-align:center; padding:24px; background:#F0F9FF; border:1px solid #BAE6FD;">
-                        <div style="font-weight:700; color:#0284C7; font-size:1.15rem;">✦ CodeGuard is reviewing your code</div>
-                        <div style="font-size:0.9rem; color:#0369A1; margin-top:8px;">
-                            ✓ Checking for bugs &nbsp;|&nbsp; ✓ Checking security &nbsp;|&nbsp; ✓ Understanding code &nbsp;|&nbsp; ✓ Preparing recommendations
+                    <div class="card-box" style="text-align:center; padding:18px; background:#F0F9FF; border:1px solid #BAE6FD;">
+                        <div style="font-weight:700; color:#0284C7; font-size:1.05rem;">CodeGuard is reviewing your code ✦</div>
+                        <div style="font-size:0.85rem; color:#0369A1; margin-top:6px;">
+                            ✓ Checking for bugs &nbsp;|&nbsp; ✓ Checking security &nbsp;|&nbsp; ✓ Understanding code &nbsp;|&nbsp; ◌ Preparing fixes
                         </div>
                     </div>
                     """,
@@ -350,13 +369,13 @@ if st.session_state.pipeline_result is None:
             st.rerun()
 
 # ----------------------------------------------------
-# SCREEN 2: DEDICATED RESULTS WORKSPACE STATE
+# SCREEN 2: DEDICATED COMPACT RESULTS WORKSPACE
 # ----------------------------------------------------
 else:
     res = st.session_state.pipeline_result
 
-    # Top Action to Start New Review
-    if st.button("← Start New Review"):
+    # Top Action to Return to Input Screen
+    if st.button("← New Review"):
         st.session_state.pipeline_result = None
         st.rerun()
 
@@ -372,26 +391,37 @@ else:
         def get_count(k):
             return getattr(counts, k, 0) if hasattr(counts, k) else (counts.get(k, 0) if isinstance(counts, dict) else 0)
 
-        total_issues = len(res["consolidated_issues"])
+        consolidated = res["consolidated_issues"]
+        total_issues = len(consolidated)
+        sec_count = len([i for i in consolidated if i.category == "Security Vulnerability"])
         final_val = res["final_validation"]
 
-        st.markdown("## Your Code Review ✦")
-        st.markdown(f"<p style='color:#475569; font-size:1rem;'><b>{total_issues} issue(s) found</b></p>", unsafe_allow_html=True)
+        # Results Header
+        st.markdown("### Your Code Review ✦")
+        st.markdown(f"<p style='color:#475569; font-size:0.95rem; margin-top:-8px;'><b>{total_issues} issue(s) need your attention.</b></p>", unsafe_allow_html=True)
 
-        # Compact Metric Pills
+        # Small Compact Severity Summary Cards
         st.markdown(
             f"""
-            <div class="metric-pill-container">
-                <div class="metric-pill"><div class="metric-pill-num" style="color:#EF4444;">{get_count('CRITICAL')}</div><div class="metric-pill-lbl">Critical</div></div>
-                <div class="metric-pill"><div class="metric-pill-num" style="color:#F97316;">{get_count('HIGH')}</div><div class="metric-pill-lbl">High</div></div>
-                <div class="metric-pill"><div class="metric-pill-num" style="color:#F59E0B;">{get_count('MEDIUM')}</div><div class="metric-pill-lbl">Medium</div></div>
-                <div class="metric-pill"><div class="metric-pill-num" style="color:#0284C7;">{get_count('LOW')}</div><div class="metric-pill-lbl">Low</div></div>
+            <div class="metric-summary-bar">
+                <div class="small-metric-card"><div class="small-metric-num" style="color:#EF4444;">{get_count('CRITICAL')}</div><div class="small-metric-lbl">Critical</div></div>
+                <div class="small-metric-card"><div class="small-metric-num" style="color:#F97316;">{get_count('HIGH')}</div><div class="small-metric-lbl">High</div></div>
+                <div class="small-metric-card"><div class="small-metric-num" style="color:#F59E0B;">{get_count('MEDIUM')}</div><div class="small-metric-lbl">Medium</div></div>
+                <div class="small-metric-card"><div class="small-metric-num" style="color:#0284C7;">{get_count('LOW')}</div><div class="small-metric-lbl">Low</div></div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        # Dedicated Workspace Tabs
+        # One Concise Explanatory Sentence
+        if total_issues == 0:
+            st.markdown("<div class='explanation-callout' style='background:#F0FDF4; border-color:#86EFAC; color:#15803D;'>✨ CodeGuard analyzed your code and found no issues.</div>", unsafe_allow_html=True)
+        elif sec_count > 0:
+            st.markdown(f"<div class='explanation-callout'>CodeGuard found {total_issues} issue(s), including {sec_count} security risk(s).</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='explanation-callout'>Your code has {total_issues} issue(s) that should be fixed before use.</div>", unsafe_allow_html=True)
+
+        # Dedicated Result Navigation Tabs
         t_over, t_issues, t_sec, t_fix, t_val = st.tabs([
             "Overview",
             f"Issues ({total_issues})",
@@ -400,37 +430,37 @@ else:
             "Validation"
         ])
 
-        # TAB 1: OVERVIEW
+        # TAB 1: OVERVIEW (Short Health Breakdown)
         with t_over:
-            st.markdown("#### Code Health Summary")
+            st.markdown("##### Code Status")
             if total_issues == 0:
-                st.success("✨ Your code looks great! No issues were detected by the review pipeline.")
+                st.success("● Good — Code is clean.")
             else:
-                st.warning("Your code needs attention before production use.")
-                st.write(f"- 🛡 Security: {'Needs attention' if get_count('CRITICAL') > 0 else 'Good'}")
-                st.write(f"- ⚡ Reliability: {'Needs attention' if get_count('HIGH') > 0 else 'Good'}")
-                st.write(f"- ✨ Code Quality: {'Needs attention' if get_count('MEDIUM') > 0 else 'Good'}")
-                st.info("CodeGuard recommends fixing the highlighted issues before using this code in production.")
+                st.markdown(f"- **Security**: {'● Needs attention' if sec_count > 0 else '● Good'}")
+                st.markdown(f"- **Reliability**: {'● Needs attention' if get_count('HIGH') > 0 else '● Good'}")
+                st.markdown(f"- **Code Quality**: {'● Needs attention' if get_count('MEDIUM') > 0 else '● Good'}")
+                st.caption("CodeGuard recommends fixing highlighted issues before production deployment.")
 
-        # TAB 2: ISSUES
+        # TAB 2: ISSUES LIST (Compact Cards with View Details expander)
         with t_issues:
-            issues = res["consolidated_issues"]
-            if not issues:
+            if not consolidated:
                 st.success("✨ No issues detected.")
             else:
-                cat_filter = st.radio("Filter Category", options=["All", "Bugs", "Security", "Quality"], horizontal=True)
+                cat_filter = st.radio("Filter", options=["All", "Bugs", "Security", "Quality"], horizontal=True)
                 
-                filtered = issues
+                filtered = consolidated
                 if cat_filter == "Bugs":
-                    filtered = [i for i in issues if i.category in ("Logic Bug", "Syntax Error")]
+                    filtered = [i for i in consolidated if i.category in ("Logic Bug", "Syntax Error")]
                 elif cat_filter == "Security":
-                    filtered = [i for i in issues if i.category == "Security Vulnerability"]
+                    filtered = [i for i in consolidated if i.category == "Security Vulnerability"]
                 elif cat_filter == "Quality":
-                    filtered = [i for i in issues if i.category in ("Code Quality", "Performance")]
+                    filtered = [i for i in consolidated if i.category in ("Code Quality", "Performance")]
 
                 for iss in filtered:
-                    sev_symbol = "🔴" if iss.severity in ("CRITICAL", "HIGH") else "🟡"
-                    with st.expander(f"{sev_symbol} {iss.severity} · {iss.category} — {iss.title} (Line {iss.line})"):
+                    sev_badge = get_severity_badge_html(iss.severity)
+                    cat_badge = get_category_badge_html(iss.category)
+                    
+                    with st.expander(f"{iss.severity} · {iss.category} — Line {iss.line}: {iss.title}"):
                         st.markdown(f"**Problem:** {iss.description}")
                         st.markdown(f"**Why it matters:** {iss.impact}")
                         st.markdown(f"**Recommended fix:** {iss.recommendation}")
@@ -439,10 +469,10 @@ else:
 
         # TAB 3: SECURITY AUDIT
         with t_sec:
-            sec_issues = [i for i in res["consolidated_issues"] if i.category == "Security Vulnerability"]
-            st.markdown("#### Security Audit")
+            sec_issues = [i for i in consolidated if i.category == "Security Vulnerability"]
+            st.markdown("##### Security Audit")
             if not sec_issues:
-                st.success("✓ No exposed secrets detected\n✓ No unsafe command execution detected")
+                st.success("✓ No exposed secrets or dangerous executions detected.")
             else:
                 for s in sec_issues:
                     st.error(f"⚠ Line {s.line}: {s.title} — {s.description}")
@@ -450,7 +480,7 @@ else:
         # TAB 4: FIX TAB
         with t_fix:
             st.markdown("### ✨ Fix your code")
-            st.caption("CodeGuard generated a safer version based on the issues found.")
+            st.caption("CodeGuard generated a corrected version based on the detected issues.")
 
             fixed_code = res["final_fixed_code"]
             c_orig, c_fix = st.columns(2)
@@ -462,12 +492,9 @@ else:
                 st.code(fixed_code, language="python", line_numbers=True)
 
             st.markdown("##### WHAT CHANGED")
-            st.write("- ✓ Removed hardcoded secret / unsafe evaluation")
-            st.write("- ✓ Added input validation & zero-division checks")
+            st.write("- ✓ Removed hardcoded secret / unsafe dynamic execution")
+            st.write("- ✓ Added input validation & boundary checks")
             st.write("- ✓ Improved error handling")
-
-            st.markdown("##### Unified Diff")
-            st.code(generate_unified_diff(res["original_code"], fixed_code), language="diff")
 
             col_fx1, col_fx2 = st.columns(2)
             with col_fx1:
@@ -481,16 +508,24 @@ else:
             st.markdown("### Validation")
             st.caption("Did the fix pass the re-check?")
 
-            if res["is_resolved"]:
-                st.success("✓ Fix validated — CodeGuard re-checked the corrected code and found no remaining issues in the configured review pipeline.")
-            else:
-                st.warning("⚠ Some issues remain — CodeGuard found additional issues after re-review.")
+            rem_count = len(final_val.remaining_issues if final_val and final_val.remaining_issues else [])
 
-            st.markdown("##### Self-Review Summary")
-            st.write("- ✓ Review completed")
-            st.write("- ✓ Fix generated")
-            st.write("- ✓ Fix re-checked")
-            st.write("- ✓ Validation completed")
+            if res["is_resolved"] or rem_count == 0:
+                st.success("✓ Fix validated — CodeGuard re-checked the corrected code.")
+                st.write(f"- Issues before fix: **{total_issues}**")
+                st.write("- Issues after fix: **0**")
+            else:
+                st.warning("⚠ Some issues remain after validation.")
+                st.write(f"- Issues before fix: **{total_issues}**")
+                st.write(f"- Issues after fix: **{rem_count}**")
+
+            # Expandable Optional Recruiter View
+            with st.expander("How CodeGuard reviewed this"):
+                st.write("1. Static & Structural Analysis")
+                st.write("2. Bug & Vulnerability Audit")
+                st.write("3. Automated Fix Generation")
+                st.write("4. Neural & AST Re-Validation")
+                st.caption(f"Completed {res['total_iterations']} review cycle(s).")
 
             st.caption("ⓘ AI validation is automated static re-analysis and neural re-review. It is not formal verification.")
 

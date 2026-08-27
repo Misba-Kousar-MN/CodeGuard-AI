@@ -32,6 +32,47 @@ class CodeGuardOrchestrator:
         self.fixer_agent = FixingAgent(self.llm)
         self.validator_agent = ValidatorAgent(self.llm)
 
+    def _consolidate_issues(self, issues: List[ReviewIssue]) -> List[ReviewIssue]:
+        """
+        Consolidates overlapping static + AI findings into distinct actionable issues.
+        Merges duplicate or substantially overlapping findings on the same line/problem.
+        """
+        if not issues:
+            return []
+
+        severity_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        
+        def get_topic_key(iss: ReviewIssue) -> str:
+            text = f"{iss.title} {iss.category} {iss.description}".lower()
+            if "api_key" in text or "api key" in text or "secret" in text or "credential" in text:
+                return "secret_key"
+            if "eval" in text or "exec" in text or "dynamic code" in text:
+                return "eval_exec"
+            if "subprocess" in text or "shell=true" in text or "command injection" in text:
+                return "subprocess_shell"
+            if "zero" in text or "divide" in text or "division" in text:
+                return "division_by_zero"
+            if "except" in text or "catch-all" in text or "catch all" in text:
+                return "bare_except"
+            return iss.title.lower().strip()
+
+        seen_groups: Dict[tuple, ReviewIssue] = {}
+
+        for iss in issues:
+            topic = get_topic_key(iss)
+            group_key = (iss.line, topic)
+
+            if group_key not in seen_groups:
+                seen_groups[group_key] = iss
+            else:
+                existing = seen_groups[group_key]
+                if severity_rank.get(iss.severity, 4) < severity_rank.get(existing.severity, 4):
+                    seen_groups[group_key] = iss
+
+        consolidated = list(seen_groups.values())
+        consolidated.sort(key=lambda i: (severity_rank.get(i.severity, 4), i.line))
+        return consolidated
+
     def execute_pipeline(
         self,
         code: str,
@@ -80,18 +121,9 @@ class CodeGuardOrchestrator:
             language=language
         )
 
-        # Consolidate all detected issues (deduplicated)
-        all_issues_dict: Dict[tuple, ReviewIssue] = {}
-        for iss in code_review.issues + security_issues + static_issues:
-            key = (iss.line, iss.title, iss.category)
-            if key not in all_issues_dict:
-                all_issues_dict[key] = iss
-
-        consolidated_issues: List[ReviewIssue] = list(all_issues_dict.values())
-
-        # Sort issues by severity priority (CRITICAL > HIGH > MEDIUM > LOW) and line number
-        severity_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
-        consolidated_issues.sort(key=lambda i: (severity_rank.get(i.severity, 4), i.line))
+        # Consolidate all detected issues (deduplicated & merged by line/topic)
+        all_raw_issues = code_review.issues + security_issues + static_issues
+        consolidated_issues = self._consolidate_issues(all_raw_issues)
 
         # Update severity counts
         severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
