@@ -14,18 +14,18 @@ from utils.formatting import generate_unified_diff, get_severity_badge_html, get
 # Page Configuration - Full Width Desktop Layout
 st.set_page_config(
     page_title="CodeGuard AI — Analyze. Explain. Fix. Validate.",
-    page_icon="✦",
+    page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Professional Full-Screen Desktop Workspace CSS
+# Unified Sky-Blue SaaS Design System CSS
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
     html, body, .stApp {
-        background: linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 30%, #F8FAFC 100%) !important;
+        background: linear-gradient(180deg, #F0F9FF 0%, #F7FBFF 40%, #F8FAFC 100%) !important;
         color: #0F172A !important;
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     }
@@ -90,16 +90,6 @@ CUSTOM_CSS = """
         font-weight: 700;
     }
 
-    /* Workspace Panel Containers */
-    .workspace-panel {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 16px;
-        box-shadow: 0 4px 16px -4px rgba(56, 189, 248, 0.06);
-        min-height: calc(100vh - 90px);
-    }
-
     /* Dark Navy IDE Code Editor */
     .stTextArea textarea {
         border-radius: 10px !important;
@@ -121,6 +111,7 @@ CUSTOM_CSS = """
     .stButton > button {
         border-radius: 9px !important;
         font-weight: 700 !important;
+        height: 40px !important;
         transition: all 0.2s ease !important;
     }
 
@@ -275,7 +266,7 @@ with col_h1:
         """
         <div class="app-header">
             <div>
-                <span class="brand-title">CodeGuard AI ✦</span>
+                <span class="brand-title">🛡️ CodeGuard AI ✦</span>
                 <span class="brand-tagline">Analyze. Explain. Fix. Validate.</span>
             </div>
         </div>
@@ -367,11 +358,11 @@ with col_left:
             st.session_state.pipeline_result = None
             st.rerun()
     with col_a2:
-        run_btn = st.button("Review My Code ✨", type="primary", use_container_width=True)
+        run_btn = st.button("✨ Review My Code", type="primary", use_container_width=True)
 
     # Sample Dropdown Selector
     sample_choice = st.selectbox(
-        "Try a sample ▾",
+        "✨ Try a sample ▾",
         options=["Select a sample...", "Security Issues", "Logic Bugs", "Reliability Issues", "Code Quality", "Clean Code"],
         index=0
     )
@@ -522,7 +513,7 @@ with col_right:
                             
                             c_w1, c_w2 = st.columns(2)
                             with c_w1:
-                                st.markdown(f"**WHY IT MATTERS:**\n{iss.impact}")
+                                st.markdown(f"**WHY IT MATTERS / RISK:**\n{iss.impact}")
                             with c_w2:
                                 st.markdown(f"**RECOMMENDED FIX:**\n{iss.recommendation}")
                             
@@ -595,3 +586,4 @@ with col_right:
                     st.write("3. Automated Fix Generation")
                     st.write("4. Neural & AST Re-Validation")
                     st.caption(f"Completed {res['total_iterations']} review cycle(s).")
+                    st.caption("ⓘ AI validation performs automated static re-analysis and neural re-review checks. It does not constitute mathematical formal verification.")
