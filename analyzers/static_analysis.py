@@ -128,8 +128,22 @@ class PythonASTAnalyzer(ast.NodeVisitor):
             )
         self.generic_visit(node)
 
+    def visit_FunctionDef(self, node: ast.FunctionDef):
+        # Track variables guarded by `if` statements within this function
+        guarded_vars = set()
+        for stmt in node.body:
+            if isinstance(stmt, ast.If):
+                for sub in ast.walk(stmt.test):
+                    if isinstance(sub, ast.Name):
+                        guarded_vars.add(sub.id)
+        
+        old_guarded = getattr(self, "_current_guarded_vars", set())
+        self._current_guarded_vars = old_guarded | guarded_vars
+        self.generic_visit(node)
+        self._current_guarded_vars = old_guarded
+
     def visit_BinOp(self, node: ast.BinOp):
-        # Detect division / modulo by zero or unvalidated denominator variable
+        # Detect division / modulo by zero or unvalidated denominator expression
         if isinstance(node.op, (ast.Div, ast.FloorDiv, ast.Mod)):
             if isinstance(node.right, ast.Constant) and node.right.value == 0:
                 self.issues.append(
@@ -145,20 +159,30 @@ class PythonASTAnalyzer(ast.NodeVisitor):
                         source="Deterministic (AST)"
                     )
                 )
-            elif isinstance(node.right, ast.Name):
-                self.issues.append(
-                    ReviewIssue(
-                        category="Logic Bug",
-                        severity="MEDIUM",
-                        line=node.lineno,
-                        title=f"Potential Division by Zero (`{node.right.id}`)",
-                        description=f"Division operation by denominator variable `{node.right.id}` without zero validation.",
-                        impact=f"If `{node.right.id}` is 0, a `ZeroDivisionError` will be raised at runtime.",
-                        recommendation=f"Validate denominator before dividing: `if {node.right.id} != 0:`.",
-                        evidence=self._get_line_snippet(node.lineno),
-                        source="Deterministic (AST)"
-                    )
+            elif isinstance(node.right, (ast.Name, ast.Call)):
+                denom_var = node.right.id if isinstance(node.right, ast.Name) else (
+                    node.right.args[0].id if (isinstance(node.right, ast.Call) and node.right.args and isinstance(node.right.args[0], ast.Name)) else None
                 )
+                denom_name = node.right.id if isinstance(node.right, ast.Name) else (
+                    f"{node.right.func.id}(...)" if isinstance(node.right.func, ast.Name) else "expression"
+                )
+                
+                # Only flag if the denominator variable is NOT guarded by an prior `if` check
+                current_guarded = getattr(self, "_current_guarded_vars", set())
+                if not denom_var or denom_var not in current_guarded:
+                    self.issues.append(
+                        ReviewIssue(
+                            category="Logic Bug",
+                            severity="MEDIUM",
+                            line=node.lineno,
+                            title=f"Potential Division by Zero (`{denom_name}`)",
+                            description=f"Division operation by denominator `{denom_name}` without zero validation.",
+                            impact=f"If `{denom_name}` evaluates to 0, a `ZeroDivisionError` will be raised at runtime.",
+                            recommendation=f"Validate denominator before dividing: check that `{denom_name}` is non-zero.",
+                            evidence=self._get_line_snippet(node.lineno),
+                            source="Deterministic (AST)"
+                        )
+                    )
         self.generic_visit(node)
 
     def _get_line_snippet(self, lineno: int) -> str:
