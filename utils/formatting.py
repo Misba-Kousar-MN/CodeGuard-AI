@@ -1,4 +1,5 @@
 import difflib
+import re
 
 def generate_unified_diff(old_code: str, new_code: str, old_label: str = "Original Code", new_label: str = "Fixed Code") -> str:
     """Generates a unified text diff between old_code and new_code."""
@@ -11,6 +12,19 @@ def generate_unified_diff(old_code: str, new_code: str, old_label: str = "Origin
         n=3
     )
     return "".join(diff)
+
+
+def redact_secrets(text: str) -> str:
+    """
+    Redacts sensitive API key patterns (e.g. AIzaSy..., raw secrets) in display text.
+    """
+    if not text:
+        return text
+    # Replace AIza... API key strings
+    text = re.sub(r'AIza[0-9A-Za-z_-]{15,}', '[REDACTED]', text)
+    # Replace API_KEY = "..." string values
+    text = re.sub(r'(API_KEY\s*=\s*["\'])[^\'"]+(["\'])', r'\1[REDACTED]\2', text, flags=re.IGNORECASE)
+    return text
 
 
 def get_severity_badge_html(severity: str) -> str:

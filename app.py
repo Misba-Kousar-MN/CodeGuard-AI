@@ -9,7 +9,24 @@ load_dotenv()
 from core.llm import GeminiLLMProvider
 from core.orchestrator import CodeGuardOrchestrator
 from utils.file_handler import validate_uploaded_file, read_uploaded_file
-from utils.formatting import generate_unified_diff, get_severity_badge_html, get_category_badge_html
+from utils.formatting import generate_unified_diff, get_severity_badge_html, get_category_badge_html, redact_secrets
+
+def get_root_cause_explanation(iss) -> str:
+    """Returns developer-friendly root-cause explanation for an issue."""
+    text = f"{iss.title} {iss.category} {iss.description}".lower()
+    if "api_key" in text or "secret" in text or "credential" in text:
+        return "The credential was placed directly in a source-code string variable instead of being loaded from a secure environment variable or secrets manager."
+    if "zero" in text or "divide" in text or "division" in text:
+        return "The calculation divides price by count without validating whether count is non-zero, assuming count is always greater than 0."
+    if "eval" in text or "exec" in text or "dynamic" in text:
+        return "User-supplied input string is passed directly to Python's eval() function, which executes string contents as arbitrary executable code."
+    if "subprocess" in text or "shell=true" in text or "command" in text:
+        return "Untrusted input is interpolated directly into a shell command with shell=True enabled, causing the command to be parsed by the system shell."
+    if "except" in text or "catch-all" in text:
+        return "The try/except block uses a bare except without specifying exception types, catching all unexpected system and runtime errors indiscriminately."
+    if "condition" in text or "impossible" in text or "discount" in text:
+        return "The logical expression combines mutually exclusive bounds (e.g. price > 100 AND price < 50), which can never evaluate to True."
+    return "The implementation violates secure coding practices or standard language safety invariants."
 
 # Page Configuration
 st.set_page_config(
@@ -451,13 +468,16 @@ else:
                 for iss in filtered:
                     sev_badge = get_severity_badge_html(iss.severity)
                     cat_badge = get_category_badge_html(iss.category)
+                    root_cause = get_root_cause_explanation(iss)
                     
                     with st.expander(f"{iss.severity} · {iss.category} — Line {iss.line}: {iss.title}"):
-                        st.markdown(f"**Problem:** {iss.description}")
-                        st.markdown(f"**Why it matters:** {iss.impact}")
-                        st.markdown(f"**Recommended fix:** {iss.recommendation}")
+                        st.markdown(f"**WHAT'S WRONG:** {iss.description}")
+                        st.markdown(f"**WHY IT HAPPENED:** {root_cause}")
+                        st.markdown(f"**WHY IT MATTERS / RISK:** {iss.impact}")
+                        st.markdown(f"**RECOMMENDED FIX:** {iss.recommendation}")
                         if iss.evidence:
-                            st.code(iss.evidence, language="python")
+                            st.markdown("**EVIDENCE:**")
+                            st.code(redact_secrets(iss.evidence), language="python")
 
         # TAB 3: SECURITY AUDIT
         with t_sec:
@@ -467,26 +487,30 @@ else:
                 st.success("✓ No exposed secrets or dangerous executions detected.")
             else:
                 for s in sec_issues:
-                    st.error(f"⚠ Line {s.line}: {s.title} — {s.description}")
+                    st.error(f"⚠ Line {s.line}: {s.title} — {redact_secrets(s.description)}")
 
         # TAB 4: FIX TAB
         with t_fix:
-            st.markdown("### ✨ Fix your code")
-            st.caption("CodeGuard generated a corrected version based on the detected issues.")
+            st.markdown("### ✨ Corrected Code")
+            st.caption("CodeGuard generated this version based on the detected issues.")
 
             fixed_code = res["final_fixed_code"]
             c_orig, c_fix = st.columns(2)
             with c_orig:
                 st.markdown("##### BEFORE")
-                st.code(res["original_code"], language="python", line_numbers=True)
+                st.code(redact_secrets(res["original_code"]), language="python", line_numbers=True)
             with c_fix:
                 st.markdown("##### AFTER")
-                st.code(fixed_code, language="python", line_numbers=True)
+                st.code(redact_secrets(fixed_code), language="python", line_numbers=True)
 
             st.markdown("##### WHAT CHANGED")
-            st.write("- ✓ Removed hardcoded secret / unsafe dynamic execution")
-            st.write("- ✓ Added input validation & boundary checks")
-            st.write("- ✓ Improved error handling")
+            last_iter = res["iterations"][-1] if res.get("iterations") else None
+            if last_iter and hasattr(last_iter, "validation_result") and last_iter.validation_result.resolved_issues:
+                for resolved in last_iter.validation_result.resolved_issues:
+                    st.write(f"- ✓ {resolved}")
+            else:
+                for iss in consolidated:
+                    st.write(f"- ✓ Fixed: {iss.title} (Line {iss.line})")
 
             col_fx1, col_fx2 = st.columns(2)
             with col_fx1:
