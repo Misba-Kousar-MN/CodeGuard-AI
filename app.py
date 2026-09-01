@@ -459,10 +459,8 @@ CUSTOM_CSS = """
     /* RESPONSIVE MEDIA QUERIES (TABLET & MOBILE) */
     @media (max-width: 992px) {
         .block-container {
-            padding: 8px 10px 48px 10px !important;
+            padding: 8px !important;
             width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
         }
         .saas-header-bar {
             flex-direction: column;
@@ -475,50 +473,19 @@ CUSTOM_CSS = """
             gap: 6px !important;
         }
         .stTextArea textarea {
-            height: 220px !important;
+            height: 240px !important;
         }
         [data-testid="stHorizontalBlock"] {
             flex-wrap: wrap !important;
-            gap: 8px !important;
         }
         [data-testid="stColumn"] {
             width: 100% !important;
             flex: 1 1 100% !important;
             min-width: 100% !important;
         }
-        /* Mobile: Make Review Workspace container height auto and remove excessive vertical empty space */
-        [data-testid="stVerticalBlockBorderWrapper"],
-        [data-testid="stVerticalBlockBorderWrapper"] > div,
-        div[data-testid="stVerticalBlockBorderWrapper"],
-        div[data-testid="stVerticalBlockBorderWrapper"] > div[data-testid="stVerticalBlock"] {
-            height: auto !important;
-            min-height: unset !important;
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        div[data-testid="stCode"] {
-            min-height: unset !important;
-            max-height: 380px !important;
-            height: auto !important;
-        }
-        .empty-review-box {
-            padding: 24px 14px !important;
-            margin-top: 8px !important;
-        }
-        /* Ensure floating/bottom elements do not overlap workspace content */
-        .stApp {
-            padding-bottom: 48px !important;
-        }
     }
 
     @media (max-width: 640px) {
-        .block-container {
-            padding: 6px 8px 64px 8px !important;
-            width: 100% !important;
-            max-width: 100vw !important;
-            overflow-x: hidden !important;
-            box-sizing: border-box !important;
-        }
         .saas-brand-title {
             font-size: 15px !important;
         }
@@ -530,7 +497,6 @@ CUSTOM_CSS = """
         }
         .sev-cards-grid {
             grid-template-columns: 1fr 1fr !important;
-            gap: 6px !important;
         }
         .stTabs [data-baseweb="tab-list"] {
             flex-wrap: wrap !important;
@@ -541,30 +507,7 @@ CUSTOM_CSS = """
             font-size: 11px !important;
         }
         .stTextArea textarea {
-            height: 190px !important;
-        }
-        /* Strict Mobile Review Workspace Auto Height */
-        [data-testid="stVerticalBlockBorderWrapper"],
-        [data-testid="stVerticalBlockBorderWrapper"] > div,
-        div[data-testid="stVerticalBlockBorderWrapper"],
-        div[data-testid="stVerticalBlockBorderWrapper"] > div[data-testid="stVerticalBlock"] {
-            height: auto !important;
-            min-height: 0 !important;
-            max-height: none !important;
-            overflow: visible !important;
-        }
-        div[data-testid="stCode"] {
-            min-height: 0 !important;
-            max-height: 320px !important;
-            height: auto !important;
-        }
-        .empty-review-box {
-            padding: 20px 12px !important;
-            margin-top: 6px !important;
-        }
-        /* Floating / bottom elements safety buffer */
-        .stApp {
-            padding-bottom: 72px !important;
+            height: 200px !important;
         }
     }
 </style>
