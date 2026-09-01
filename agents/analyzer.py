@@ -23,7 +23,7 @@ class CodeAnalyzerAgent:
                 summary="Gemini API Key is not configured. Running deterministic AST static analysis only."
             )
 
-        prompt = self.prompt_template.format(code=code, language=language)
+        prompt = self.prompt_template.replace("{code}", code).replace("{language}", language)
         result = self.llm.generate_structured(
             prompt=prompt,
             schema_class=AnalysisResult,

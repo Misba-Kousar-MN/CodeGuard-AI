@@ -15,13 +15,18 @@ DETERMINISTIC STATIC FINDINGS:
 {static_issues}
 
 TASK:
-Perform a deep code review focusing on:
-1. Logical bugs & runtime risks (off-by-one errors, division by zero, unhandled edge cases, incorrect conditions, infinite loops).
-2. Code quality & maintainability issues (bad variable naming, duplicate logic, anti-patterns, missing exception handling).
+Perform an objective code review focusing on:
+1. Logical bugs & runtime risks (off-by-one errors, division by zero, unhandled edge cases, incorrect/impossible conditions, infinite loops).
+2. Code quality & maintainability issues (duplicate logic, anti-patterns, dangerous exception handling, resource leaks).
 3. Performance bottlenecks.
 
 CONSTRAINTS:
-- ONLY report real, actionable issues present in the code.
+- ONLY report real, actionable issues and genuine bugs present in the code. If the code is clean, valid, or adequately handled, return an empty issues list: [].
+- If a guard clause or check (e.g. `if quantity <= 0: return ...` or `if b == 0: ...`) prevents division by zero or handles an edge case, the code is SAFE. You MUST NOT flag it as a division by zero or logical bug.
+- Do NOT critique or rewrite the mathematical intent or formula definitions (e.g. `price / quantity` or discount structures). Unless an unhandled runtime exception occurs, author-defined formulas are intentional and MUST NOT be flagged as bugs.
+- Do NOT nitpick clean, well-formed code. Standard if-else conditional bounds, business logic calculations, threshold checks, and typed exception handlers (`try...except Exception:` or `try...except (ErrorA, ErrorB):`) are valid and MUST NOT be flagged as bugs.
+- Do NOT flag module-level configuration loading, `os.getenv()`, or global constants as code quality or architectural bugs.
+- Do NOT invent hypothetical bugs that are already prevented by existing validation checks in the code.
 - Provide accurate line numbers corresponding directly to the provided code. Do NOT invent line numbers or fake evidence snippets.
 - For severity, classify as CRITICAL, HIGH, MEDIUM, or LOW based on impact.
 - Include existing deterministic AST findings in your returned findings if they remain valid.

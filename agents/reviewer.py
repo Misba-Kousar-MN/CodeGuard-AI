@@ -12,8 +12,10 @@ class CodeReviewerAgent:
         with open(prompt_path, "r", encoding="utf-8") as f:
             self.prompt_template = f.read()
 
-    def review(self, code: str, analysis: AnalysisResult, static_issues: List[ReviewIssue], language: str = "python") -> ReviewResult:
+    def review(self, code: str, analysis: Optional[AnalysisResult] = None, static_issues: Optional[List[ReviewIssue]] = None, language: str = "python") -> ReviewResult:
+        static_issues = static_issues or []
         static_str = "\n".join([f"- [Line {i.line}] {i.severity} {i.title}: {i.description}" for i in static_issues]) if static_issues else "None"
+        analysis_summary = analysis.summary if analysis and analysis.summary else f"Automated source code review for {language}."
 
         if not self.llm.is_available():
             # Return static issues wrapped in ReviewResult
@@ -27,11 +29,12 @@ class CodeReviewerAgent:
                 overall_assessment="Static Analysis Complete."
             )
 
-        prompt = self.prompt_template.format(
-            code=code,
-            language=language,
-            analysis_summary=analysis.summary,
-            static_issues=static_str
+        prompt = (
+            self.prompt_template
+            .replace("{code}", code)
+            .replace("{language}", language)
+            .replace("{analysis_summary}", analysis_summary)
+            .replace("{static_issues}", static_str)
         )
 
         result = self.llm.generate_structured(

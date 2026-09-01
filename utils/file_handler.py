@@ -3,7 +3,7 @@ from typing import Tuple, Optional
 
 MAX_FILE_SIZE_BYTES = 256 * 1024  # 256 KB limit for MVP
 
-ALLOWED_EXTENSIONS = {".py", ".js", ".java", ".txt"}
+ALLOWED_EXTENSIONS = {".py", ".cpp", ".cc", ".cxx", ".c", ".h", ".hpp", ".java", ".js", ".txt"}
 
 def validate_uploaded_file(file_name: str, file_bytes: bytes) -> Tuple[bool, str]:
     """
@@ -18,7 +18,7 @@ def validate_uploaded_file(file_name: str, file_bytes: bytes) -> Tuple[bool, str
 
     ext = os.path.splitext(file_name)[1].lower()
     if ext and ext not in ALLOWED_EXTENSIONS:
-        return False, f"Unsupported file extension '{ext}'. Currently Python (.py) is primarily supported."
+        return False, f"Unsupported file extension '{ext}'. Supported languages: Python (.py), C++ (.cpp, .h), Java (.java)."
 
     return True, ""
 

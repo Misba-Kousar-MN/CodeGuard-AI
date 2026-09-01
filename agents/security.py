@@ -12,18 +12,21 @@ class SecurityReviewerAgent:
         with open(prompt_path, "r", encoding="utf-8") as f:
             self.prompt_template = f.read()
 
-    def audit(self, code: str, analysis: AnalysisResult, static_security_issues: List[ReviewIssue], language: str = "python") -> List[ReviewIssue]:
+    def audit(self, code: str, analysis: Optional[AnalysisResult] = None, static_security_issues: Optional[List[ReviewIssue]] = None, language: str = "python") -> List[ReviewIssue]:
+        static_security_issues = static_security_issues or []
         sec_static = [i for i in static_security_issues if i.category == "Security Vulnerability"]
         sec_str = "\n".join([f"- [Line {i.line}] {i.severity} {i.title}: {i.description}" for i in sec_static]) if sec_static else "None"
+        analysis_summary = analysis.summary if analysis and analysis.summary else f"Security vulnerability audit for {language}."
 
         if not self.llm.is_available():
             return sec_static
 
-        prompt = self.prompt_template.format(
-            code=code,
-            language=language,
-            analysis_summary=analysis.summary,
-            static_security_issues=sec_str
+        prompt = (
+            self.prompt_template
+            .replace("{code}", code)
+            .replace("{language}", language)
+            .replace("{analysis_summary}", analysis_summary)
+            .replace("{static_security_issues}", sec_str)
         )
 
         result = self.llm.generate_structured(

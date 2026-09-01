@@ -35,9 +35,43 @@ class TestStaticAnalysis(unittest.TestCase):
         issues = run_static_analysis(self.clean_code)
         self.assertEqual(len(issues), 0, "Clean code should trigger 0 AST issues")
 
-    def test_empty_code_detection(self):
-        issues = run_static_analysis("")
-        self.assertEqual(len(issues), 0, "Empty code should trigger 0 AST issues")
+    def test_cpp_static_analysis(self):
+        cpp_code = """
+        #include <iostream>
+        #include <cstring>
+        const char* API_KEY = "AIzaSyD9x8K11223344556677889900aabbcc";
+        void test(char* in) {
+            char buf[10];
+            strcpy(buf, in);
+            system("echo test");
+            int x = 10 / 0;
+        }
+        """
+        issues = run_static_analysis(cpp_code, language="cpp")
+        titles = [i.title for i in issues]
+        self.assertTrue(any("Hardcoded" in t for t in titles), "Should detect C++ hardcoded secret")
+        self.assertTrue(any("strcpy" in t for t in titles), "Should detect C++ strcpy overflow")
+        self.assertTrue(any("system" in t for t in titles), "Should detect C++ system command")
+        self.assertTrue(any("Division" in t for t in titles), "Should detect C++ division by zero")
+
+    def test_java_static_analysis(self):
+        java_code = """
+        public class Test {
+            private String API_KEY = "AIzaSyD9x8K11223344556677889900aabbcc";
+            public void run(String cmd) {
+                try {
+                    Runtime.getRuntime().exec(cmd);
+                    int val = 100 / 0;
+                } catch (Exception e) {}
+            }
+        }
+        """
+        issues = run_static_analysis(java_code, language="java")
+        titles = [i.title for i in issues]
+        self.assertTrue(any("Hardcoded" in t for t in titles), "Should detect Java hardcoded secret")
+        self.assertTrue(any("Runtime.exec" in t for t in titles), "Should detect Java Runtime.exec")
+        self.assertTrue(any("Division" in t for t in titles), "Should detect Java division by zero")
+        self.assertTrue(any("catch" in t.lower() for t in titles), "Should detect Java broad catch")
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,26 +28,33 @@ def redact_secrets(text: str) -> str:
 
 
 def get_severity_badge_html(severity: str) -> str:
-    """Returns HTML styled pill badge for issue severity."""
+    """Returns cute dreamy pastel pill badge for issue severity."""
     severity = severity.upper()
     styles = {
-        "CRITICAL": "background: #FEF2F2; color: #DC2626; border: 1px solid #FCA5A5;",
-        "HIGH": "background: #FFF7ED; color: #EA580C; border: 1px solid #FDBA74;",
-        "MEDIUM": "background: #FEFCE8; color: #D97706; border: 1px solid #FDE68A;",
-        "LOW": "background: #F0F9FF; color: #0284C7; border: 1px solid #BAE6FD;"
+        "CRITICAL": "background: linear-gradient(135deg, #FFE4E6 0%, #FECDD3 100%); color: #BE123C; border: 1px solid #FDA4AF; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.15);",
+        "HIGH": "background: linear-gradient(135deg, #FFEDD5 0%, #FED7AA 100%); color: #C2410C; border: 1px solid #FDBA74; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.15);",
+        "MEDIUM": "background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%); color: #A16207; border: 1px solid #FDE047; box-shadow: 0 2px 6px rgba(234, 179, 8, 0.15);",
+        "LOW": "background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%); color: #15803D; border: 1px solid #86EFAC; box-shadow: 0 2px 6px rgba(34, 197, 94, 0.15);"
     }
-    style = styles.get(severity, "background: #F8FAFC; color: #64748B; border: 1px solid #E2E8F0;")
-    return f'<span style="{style} padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 11px; letter-spacing: 0.04em;">{severity}</span>'
+    icons = {
+        "CRITICAL": "🚨",
+        "HIGH": "⚡",
+        "MEDIUM": "🫧",
+        "LOW": "🌿"
+    }
+    style = styles.get(severity, "background: #F3E8FF; color: #6B21A8; border: 1px solid #D8B4FE;")
+    icon = icons.get(severity, "●")
+    return f'<span style="{style} display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 11px; letter-spacing: 0.03em;">{icon} {severity}</span>'
 
 
 def get_category_badge_html(category: str) -> str:
-    """Returns HTML styled pill badge for issue category."""
+    """Returns cute dreamy pastel pill badge for issue category."""
     styles = {
-        "Security Vulnerability": "background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;",
-        "Logic Bug": "background: #FFE4E6; color: #E11D48; border: 1px solid #FECDD3;",
-        "Code Quality": "background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;",
-        "Performance": "background: #CCFBF1; color: #0F766E; border: 1px solid #99F6E4;",
-        "Syntax Error": "background: #F3E8FF; color: #7E22CE; border: 1px solid #E9D5FF;"
+        "Security Vulnerability": ("🛡️", "background: linear-gradient(135deg, #FEE2E2 0%, #FFEDD5 100%); color: #9A3412; border: 1px solid #FCA5A5;"),
+        "Logic Bug": ("🐞", "background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%); color: #9D174D; border: 1px solid #F472B6;"),
+        "Code Quality": ("🪄", "background: linear-gradient(135deg, #E0E7FF 0%, #DDD6FE 100%); color: #4338CA; border: 1px solid #A5B4FC;"),
+        "Performance": ("⚡", "background: linear-gradient(135deg, #CCFBF1 0%, #99F6E4 100%); color: #115E59; border: 1px solid #5EEAD4;"),
+        "Syntax Error": ("🎀", "background: linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%); color: #6B21A8; border: 1px solid #D8B4FE;")
     }
-    style = styles.get(category, "background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0;")
-    return f'<span style="{style} padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 11px;">{category}</span>'
+    icon, style = styles.get(category, ("●", "background: #F1F5F9; color: #334155; border: 1px solid #CBD5E1;"))
+    return f'<span style="{style} display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 9999px; font-weight: 600; font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">{icon} {category}</span>'

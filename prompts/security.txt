@@ -23,7 +23,9 @@ Audit the code for security vulnerabilities:
 5. Insecure cryptography or password handling.
 
 CONSTRAINTS:
-- Do NOT make exaggerated security claims or false positives for benign code.
+- Do NOT make exaggerated security claims or false positives for benign code. If no real vulnerabilities exist, return an empty list: [].
+- Reading configuration or secrets via `os.getenv()` or secure environment variables is standard safe practice and MUST NEVER be flagged as a security vulnerability or secret exposure.
+- Safe functions like `ast.literal_eval()` and `subprocess.run(..., shell=False)` are secure standard fixes and MUST NOT be flagged as vulnerabilities or DoS risks.
 - Report real vulnerabilities with precise line numbers and exact code evidence.
 - Categorize each issue under "Security Vulnerability".
 - Return structured output containing detected ReviewIssue objects.

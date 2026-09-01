@@ -52,13 +52,17 @@ class GeminiLLMProvider:
         except Exception:
             pass
 
-        self.model = model or model_secret or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+        self.model = model or model_secret or os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
         self._client = None
 
         if self.api_key:
             try:
                 from google import genai
-                self._client = genai.Client(api_key=self.api_key)
+                from google.genai import types
+                self._client = genai.Client(
+                    api_key=self.api_key,
+                    http_options=types.HttpOptions(timeout=15000)
+                )
             except Exception as e:
                 print(f"[GeminiLLMProvider] Warning: Failed to initialize GenAI client: {e}")
                 self._client = None
@@ -72,66 +76,84 @@ class GeminiLLMProvider:
         if not text:
             return ""
         cleaned = text.strip()
-        if cleaned.startswith("```json"):
-            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
-        elif cleaned.startswith("```"):
-            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+        if "```json" in cleaned:
+            parts = cleaned.split("```json")
+            if len(parts) > 1:
+                cleaned = parts[1].split("```")[0].strip()
+        elif "```" in cleaned:
+            parts = cleaned.split("```")
+            if len(parts) > 1:
+                cleaned = parts[1].split("```")[0].strip()
+
+        # If still not starting with '{' or '[', attempt to extract JSON object
+        if not cleaned.startswith("{") and not cleaned.startswith("[") and "{" in cleaned:
+            first_brace = cleaned.find("{")
+            last_brace = cleaned.rfind("}")
+            if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+                cleaned = cleaned[first_brace:last_brace + 1].strip()
         return cleaned
 
     def generate_structured(self, prompt: str, schema_class: Type[T], system_instruction: Optional[str] = None) -> Optional[T]:
         """
         Generate a structured Pydantic model output using Gemini's JSON schema capability.
-        Handles response normalization, markdown fences, and truncation errors.
+        Strict 15s timeout, maximum 1 retry on transient errors, fast failure fallback.
         """
         if not self.is_available():
-            print("[GeminiLLMProvider] Gemini API is unavailable.")
             return None
 
+        import time
         from google.genai import types
 
-        try:
-            config = types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=schema_class,
-                temperature=0.2,
-                max_output_tokens=8192,
-            )
-            if system_instruction:
-                config.system_instruction = system_instruction
-
-            response = self._client.models.generate_content(
-                model=self.model,
-                contents=prompt,
-                config=config,
-            )
-
-            if not response or not response.text:
-                raise ValueError("Empty response received from Gemini API.")
-
-            cleaned_text = self._clean_json_string(response.text)
-
-            # Direct Pydantic model validation
+        max_retries = 1  # Maximum 1 automatic retry
+        for attempt in range(max_retries + 1):
             try:
-                return schema_class.model_validate_json(cleaned_text)
-            except Exception:
-                # Fallback to json dict parsing + model_validate
-                data = json.loads(cleaned_text)
-                return schema_class.model_validate(data)
+                config = types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=schema_class,
+                    temperature=0.1,
+                    max_output_tokens=8192,
+                )
+                if system_instruction:
+                    config.system_instruction = system_instruction
 
-        except Exception as e:
-            print(f"[GeminiLLMProvider] Stage [{schema_class.__name__}] error: {e}")
-            # Attempt recovery if response object was instantiated
-            try:
-                if 'response' in locals() and response and response.text:
-                    cleaned_text = self._clean_json_string(response.text)
+                response = self._client.models.generate_content(
+                    model=self.model,
+                    contents=prompt,
+                    config=config,
+                )
+
+                if not response or not response.text:
+                    raise ValueError("Empty response received from Gemini API.")
+
+                cleaned_text = self._clean_json_string(response.text)
+
+                # Direct Pydantic model validation
+                try:
+                    return schema_class.model_validate_json(cleaned_text)
+                except Exception:
                     data = json.loads(cleaned_text)
                     return schema_class.model_validate(data)
-            except Exception as parse_err:
-                print(f"[GeminiLLMProvider] Fallback parsing failed for {schema_class.__name__}: {parse_err}")
-            return None
+
+            except Exception as e:
+                err_str = str(e)
+                if attempt < max_retries:
+                    print(f"[GeminiLLMProvider] Transient error for {schema_class.__name__} ({err_str[:80]}), retrying once...")
+                    time.sleep(1.0)
+                    continue
+
+                print(f"[GeminiLLMProvider] Stage [{schema_class.__name__}] failed gracefully: {err_str[:120]}")
+                try:
+                    if 'response' in locals() and response and response.text:
+                        cleaned_text = self._clean_json_string(response.text)
+                        data = json.loads(cleaned_text)
+                        return schema_class.model_validate(data)
+                except Exception:
+                    pass
+                return None
+        return None
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None) -> str:
-        """Generate freeform text response."""
+        """Generate freeform text response with strict timeout."""
         if not self.is_available():
             return "AI Analysis Unavailable: GEMINI_API_KEY is not configured."
 

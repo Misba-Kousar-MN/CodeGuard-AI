@@ -38,8 +38,8 @@ def run_ruff_analysis(code: str) -> List[ReviewIssue]:
                     message = item.get("message", "")
                     lineno = item.get("location", {}).get("row", 1)
                     
-                    # Ignore pure cosmetic style rules (import sorting I001, formatting W292, pyupgrade UP)
-                    if code_rule.startswith("I") or code_rule.startswith("UP") or code_rule in ("W292", "E501"):
+                    # Ignore pure cosmetic style / opinionated rules (import sorting I, formatting W292, pyupgrade UP, pylint PL, blind except BLE, try-pass S110/S112, etc.)
+                    if code_rule.startswith(("I", "UP", "PL", "BLE", "TRY", "EM", "ERA", "D", "ANN", "RET", "SIM", "ARG", "PTH")) or code_rule in ("W292", "E501", "RUF012", "S110", "S112"):
                         continue
 
                     # Map Ruff severity

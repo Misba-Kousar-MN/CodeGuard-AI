@@ -21,8 +21,15 @@ class ValidatorAgent:
         iteration_count: int = 1,
         language: str = "python"
     ) -> ValidationResult:
-        # Step 1: Re-run deterministic AST static analysis on fixed code
-        re_static_issues = run_static_analysis(fixed_code)
+        # Step 1: Re-run deterministic static analysis on fixed code
+        lang_lower = language.lower().strip()
+        if lang_lower in ("python", "py"):
+            from analyzers.ruff_analyzer import run_ruff_analysis
+            ast_issues = run_static_analysis(fixed_code, language="python")
+            ruff_issues = run_ruff_analysis(fixed_code)
+            re_static_issues = ast_issues + ruff_issues
+        else:
+            re_static_issues = run_static_analysis(fixed_code, language=lang_lower)
 
         orig_issues_text = "\n".join([
             f"- [{iss.category}] Line {iss.line}: {iss.title} - {iss.description}"
@@ -54,12 +61,13 @@ class ValidatorAgent:
                 summary="AST static analysis re-review passed with 0 remaining syntax/AST errors."
             )
 
-        prompt = self.prompt_template.format(
-            original_code=original_code,
-            fixed_code=fixed_code,
-            original_issues_text=orig_issues_text,
-            re_static_issues=re_static_text,
-            language=language
+        prompt = (
+            self.prompt_template
+            .replace("{original_code}", original_code)
+            .replace("{fixed_code}", fixed_code)
+            .replace("{original_issues_text}", orig_issues_text)
+            .replace("{re_static_issues}", re_static_text)
+            .replace("{language}", language)
         )
 
         result = self.llm.generate_structured(
